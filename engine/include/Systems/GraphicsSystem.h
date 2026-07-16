@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include <SDL3/SDL.h>
 #include <glm/glm.hpp>
 #include "Components/Camera.h"
@@ -7,6 +8,7 @@
 
 namespace MonkeyDEngine
 {
+    class MeshRenderer;
     struct VertexUniformBufferObject
     {
         glm::mat4 viewProjection;
@@ -16,6 +18,12 @@ namespace MonkeyDEngine
     struct FragmentUniformBufferData
     {
         glm::vec3 viewPosition;
+    };
+
+    struct RenderPassData
+    {
+        SDL_GPURenderPass *activeRenderPass;
+        std::vector<MeshRenderer *> meshRenderers;
     };
 
     class GraphicsSystem : public SystemBase
@@ -33,15 +41,16 @@ namespace MonkeyDEngine
         SDL_GPUTexture *depthTexture; // z-buffer
 
         SDL_GPUGraphicsPipeline *gpuGraphicsPipeline;
+        SDL_GPUCommandBuffer *gpuCommandBuffer;
+        RenderPassData gpuRenderPass{};
 
         Camera *mainCamera = new Camera();
+
+        int Render3D();
 
     protected:
         void OnStartSystem() override;
         void OnStopSystem() override;
-
-        SDL_GPUGraphicsPipeline *CreateGraphicsPipeline();
-        int Render3D();
 
         SDL_GPUShader *CreateShader(
             const char *shaderFilePath,

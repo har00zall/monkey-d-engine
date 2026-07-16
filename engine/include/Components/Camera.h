@@ -10,6 +10,8 @@ namespace MonkeyDEngine
     protected:
         Transform m_transform{};
 
+        float orbitAngle = 0.0f, orbitSpeed = 0.015f;
+
     public:
         Camera();
         ~Camera() = default;
@@ -18,6 +20,6 @@ namespace MonkeyDEngine
 
         virtual void Start() override;
         virtual void Update() override;
-        virtual void Render(SDL_GPUCommandBuffer *commandBuffer) override;
+        virtual void Render() override;
     };
 };

@@ -17,7 +17,8 @@ MeshRenderer::~MeshRenderer()
 
 void MeshRenderer::Start()
 {
-    graphicsSystem = SystemLocator::Instance().Get<GraphicsSystem>();
+    auto graphicsSystem = SystemLocator::Instance().Get<GraphicsSystem>();
+    graphicsSystem->gpuRenderPass.meshRenderers.push_back(this);
 
     // create the vertex buffer
     graphicsSystem->gpuVertexBufferInfo.size = 0;
@@ -94,8 +95,10 @@ void MeshRenderer::Update()
 {
 }
 
-void MeshRenderer::Render(SDL_GPUCommandBuffer *commandBuffer)
+void MeshRenderer::Render()
 {
+    auto graphicsSystem = SystemLocator::Instance().Get<GraphicsSystem>();
+
     // object matrices
     SDL_Log("Creating vertex buffer object");
     if (!graphicsSystem)
@@ -110,7 +113,7 @@ void MeshRenderer::Render(SDL_GPUCommandBuffer *commandBuffer)
     }
     FragmentUniformBufferData fragmentUniformBufferData{};
     fragmentUniformBufferData.viewPosition = graphicsSystem->mainCamera->GetTransform().position;
-    SDL_PushGPUFragmentUniformData(commandBuffer, 0, &fragmentUniformBufferData, sizeof(FragmentUniformBufferData));
+    SDL_PushGPUFragmentUniformData(graphicsSystem->gpuCommandBuffer, 0, &fragmentUniformBufferData, sizeof(FragmentUniformBufferData));
 
     VertexUniformBufferObject vertexUniformBufferObject{};
     SDL_Log("assign viewProjection to vertex buffer object");
@@ -118,19 +121,17 @@ void MeshRenderer::Render(SDL_GPUCommandBuffer *commandBuffer)
     SDL_Log("assign model to vertex buffer object");
     vertexUniformBufferObject.model = m_transform.GetModelMatrix();
     SDL_Log("push vertex buffer object");
-    SDL_PushGPUVertexUniformData(commandBuffer, 0, &vertexUniformBufferObject, sizeof(VertexUniformBufferObject));
-}
+    SDL_PushGPUVertexUniformData(graphicsSystem->gpuCommandBuffer, 0, &vertexUniformBufferObject, sizeof(VertexUniformBufferObject));
 
-void MeshRenderer::PostRender(SDL_GPURenderPass *renderPass, Uint32 num_instances, Uint32 first_index, Sint32 vertex_offset, Uint32 first_instance)
-{
-    SDL_DrawGPUIndexedPrimitives(renderPass, m_mesh.GetIndexCount(), num_instances, first_index, vertex_offset, first_instance);
+    SDL_DrawGPUIndexedPrimitives(graphicsSystem->gpuRenderPass.activeRenderPass, m_mesh.GetIndexCount(), 1, 0, 0, 0);
 }
 
 void MeshRenderer::LoadMesh(const char *filePath, Mesh &outMesh)
 {
+    auto graphicsSystem = SystemLocator::Instance().Get<GraphicsSystem>();
     std::vector<Vertex> vertices;
     std::vector<Uint32> indices;
-    if (!Geometry::LoadGLTF("assets/monkey.gltf", vertices, indices))
+    if (!Geometry::LoadGLTF(filePath, vertices, indices))
     {
         SDL_Log("Failed to load model, aborting");
         return;

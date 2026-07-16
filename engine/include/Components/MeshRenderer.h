@@ -12,7 +12,7 @@ namespace MonkeyDEngine
         Transform m_transform{};
         Mesh m_mesh;
 
-        std::shared_ptr<GraphicsSystem> graphicsSystem = nullptr;
+        // std::shared_ptr<GraphicsSystem> graphicsSystem = nullptr;
 
         void LoadMesh(const char *filePath, Mesh &outMesh);
 
@@ -26,8 +26,6 @@ namespace MonkeyDEngine
 
         virtual void Start() override;
         virtual void Update() override;
-        virtual void Render(SDL_GPUCommandBuffer *commandBuffer) override;
-
-        void PostRender(SDL_GPURenderPass *renderPass, Uint32 num_instances = 1, Uint32 first_index = 0, Sint32 vertex_offset = 0, Uint32 first_instance = 0);
+        virtual void Render() override;
     };
 };

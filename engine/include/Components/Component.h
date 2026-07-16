@@ -10,6 +10,6 @@ namespace MonkeyDEngine
     public:
         virtual void Start() = 0;
         virtual void Update() = 0;
-        virtual void Render(SDL_GPUCommandBuffer *commandBuffer) = 0;
+        virtual void Render() = 0;
     };
 };

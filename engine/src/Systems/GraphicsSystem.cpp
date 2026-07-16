@@ -2,7 +2,7 @@
 #include <exception>
 #include "Context.h"
 #include "Core/3D/Geometry.h"
-#include "Components/Camera.h"
+#include "Components/MeshRenderer.h"
 #include "Systems/GraphicsSystem.h"
 
 using namespace MonkeyDEngine;
@@ -132,21 +132,23 @@ void GraphicsSystem::OnStopSystem()
 int GraphicsSystem::Render3D()
 {
     SDL_Log("[Started] Rendering 3D");
-
     // acquire the command buffer
-    SDL_GPUCommandBuffer *commandBuffer = SDL_AcquireGPUCommandBuffer(gpuDevice);
+    gpuCommandBuffer = SDL_AcquireGPUCommandBuffer(gpuDevice);
 
     // get the swapchain texture
     SDL_GPUTexture *swapchainTexture;
-    Uint32 width, height;
-    SDL_WaitAndAcquireGPUSwapchainTexture(commandBuffer, g_Context.window, &swapchainTexture, &width, &height);
+    SDL_WaitAndAcquireGPUSwapchainTexture(
+        gpuCommandBuffer,
+        g_Context.window, &swapchainTexture,
+        &g_Context.swapchainTextureSize.width,
+        &g_Context.swapchainTextureSize.height);
 
     // end the frame early if a swapchain texture is not available
     if (swapchainTexture == NULL)
     {
         SDL_Log("Swapchain texture is null");
         // you must always submit the command buffer
-        SDL_SubmitGPUCommandBuffer(commandBuffer);
+        SDL_SubmitGPUCommandBuffer(gpuCommandBuffer);
         return SDL_APP_CONTINUE;
     }
 
@@ -168,37 +170,34 @@ int GraphicsSystem::Render3D()
     depthTargetInfo.cycle = true;
 
     // begin a render pass
-    SDL_GPURenderPass *renderPass = SDL_BeginGPURenderPass(commandBuffer, &colorTargetInfo, 1, &depthTargetInfo);
+    gpuRenderPass.activeRenderPass = SDL_BeginGPURenderPass(gpuCommandBuffer, &colorTargetInfo, 1, &depthTargetInfo);
     SDL_Log("[End] Render Pass Creation");
 
     // draw calls go here
     SDL_Log("[Started] Binding Pipeline");
-    SDL_BindGPUGraphicsPipeline(renderPass, gpuGraphicsPipeline);
+    SDL_BindGPUGraphicsPipeline(gpuRenderPass.activeRenderPass, gpuGraphicsPipeline);
 
     // binding vertex buffer
     SDL_GPUBufferBinding vertexBufferBindings[1];
     vertexBufferBindings[0].buffer = gpuVertexBuffer;
     vertexBufferBindings[0].offset = 0;
     SDL_Log("[Started] Binding Vertex Buffer");
-    SDL_BindGPUVertexBuffers(renderPass, 0, vertexBufferBindings, 1);
+    SDL_BindGPUVertexBuffers(gpuRenderPass.activeRenderPass, 0, vertexBufferBindings, 1);
 
     // binding index buffer
     SDL_GPUBufferBinding indexBufferBindings;
     indexBufferBindings.buffer = gpuIndexBuffer;
     indexBufferBindings.offset = 0;
     SDL_Log("[Started] Binding Index Buffer");
-    SDL_BindGPUIndexBuffer(renderPass, &indexBufferBindings, SDL_GPU_INDEXELEMENTSIZE_32BIT);
+    SDL_BindGPUIndexBuffer(gpuRenderPass.activeRenderPass, &indexBufferBindings, SDL_GPU_INDEXELEMENTSIZE_32BIT);
 
-    // binding Storage Buffer
-    SDL_Log("[Started] Binding Vertex Storage Buffer");
-    SDL_BindGPUVertexStorageBuffers(renderPass, 0, &gpuVertexUniformBuffer, 1);
-    SDL_Log("[End] Binding Vertex Storage Buffer");
+    SDL_Log("[Started] Render Process Mesh");
+    for (auto meshToRender : gpuRenderPass.meshRenderers)
+        meshToRender->Render();
+    SDL_Log("[End] Render Process Mesh");
 
-    // issue a draw call
-    // SDL_DrawGPUIndexedPrimitives(renderPass, app.indexCount, 1, 0, 0, 0);
-
-    SDL_EndGPURenderPass(renderPass);          // end the render pass
-    SDL_SubmitGPUCommandBuffer(commandBuffer); // submit the command buffer
+    SDL_EndGPURenderPass(gpuRenderPass.activeRenderPass); // end the render pass
+    SDL_SubmitGPUCommandBuffer(gpuCommandBuffer);
 
     SDL_Log("[End] Rendered 3D");
 

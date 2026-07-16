@@ -11,6 +11,6 @@ void Component::Update()
 {
 }
 
-void Component::Render(SDL_GPUCommandBuffer *commandBuffer)
+void Component::Render()
 {
 }

@@ -15,9 +15,16 @@ void Camera::Start()
 
 void Camera::Update()
 {
-    // OrbitCamera(0.14f, view, cameraPosition);
+    orbitAngle += orbitSpeed * 0.15F;
+
+    float radius = 10.0f;
+    glm::vec3 targetPosition(0, 0, 0);
+    m_transform.position = glm::vec3(
+        targetPosition.x + radius * cos(orbitAngle),
+        targetPosition.y + 5.0f,
+        targetPosition.z + radius * sin(orbitAngle));
 }
 
-void Camera::Render(SDL_GPUCommandBuffer *commandBuffer)
+void Camera::Render()
 {
 }
