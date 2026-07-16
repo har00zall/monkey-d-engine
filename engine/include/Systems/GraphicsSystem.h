@@ -1,10 +1,23 @@
 #pragma once
 
 #include <SDL3/SDL.h>
+#include <glm/glm.hpp>
+#include "Components/Camera.h"
 #include "Core/System/SystemBase.h"
 
 namespace MonkeyDEngine
 {
+    struct VertexUniformBufferObject
+    {
+        glm::mat4 viewProjection;
+        glm::mat4 model;
+    };
+
+    struct FragmentUniformBufferData
+    {
+        glm::vec3 viewPosition;
+    };
+
     class GraphicsSystem : public SystemBase
     {
     public:
@@ -14,14 +27,14 @@ namespace MonkeyDEngine
         SDL_GPUBuffer *gpuVertexBuffer;
         SDL_GPUBufferCreateInfo gpuIndexBufferInfo;
         SDL_GPUBuffer *gpuIndexBuffer;
-        SDL_GPUBufferCreateInfo gpuStorageBufferInfo;
-        SDL_GPUBuffer *gpuStorageBuffer;
-        SDL_GPUTransferBufferCreateInfo gpuStorageTransferBufferInfo;
-        SDL_GPUTransferBuffer *gpuStorageTransferBuffer;
+        SDL_GPUBufferCreateInfo gpuVertexUniformBufferInfo;
+        SDL_GPUBuffer *gpuVertexUniformBuffer;
 
         SDL_GPUTexture *depthTexture; // z-buffer
 
         SDL_GPUGraphicsPipeline *gpuGraphicsPipeline;
+
+        Camera *mainCamera = new Camera();
 
     protected:
         void OnStartSystem() override;

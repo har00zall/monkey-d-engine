@@ -2,6 +2,7 @@
 #include <exception>
 #include "Context.h"
 #include "Core/3D/Geometry.h"
+#include "Components/Camera.h"
 #include "Systems/GraphicsSystem.h"
 
 using namespace MonkeyDEngine;
@@ -20,7 +21,7 @@ void GraphicsSystem::OnStartSystem()
     gpuDevice = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, true, NULL);
     SDL_ClaimWindowForGPUDevice(gpuDevice, g_Context.window);
 
-    SDL_GPUShader *vertexShader = CreateShader("shaders/base.vert.spv", SDL_GPU_SHADERFORMAT_SPIRV, SDL_GPU_SHADERSTAGE_VERTEX, 0, 1, 0, 0);
+    SDL_GPUShader *vertexShader = CreateShader("shaders/base.vert.spv", SDL_GPU_SHADERFORMAT_SPIRV, SDL_GPU_SHADERSTAGE_VERTEX, 0, 0, 0, 1);
     SDL_GPUShader *fragmentShader = CreateShader("shaders/base.frag.spv", SDL_GPU_SHADERFORMAT_SPIRV, SDL_GPU_SHADERSTAGE_FRAGMENT, 0, 0, 0, 1);
 
     // create depth texture
@@ -102,6 +103,9 @@ void GraphicsSystem::OnStartSystem()
     SDL_ReleaseGPUShader(gpuDevice, fragmentShader);
 
     SDL_Log("\t\t\t\t[End] Graphics System Initialization Complete");
+
+    // Creating main camera (for now I put it here)
+    // mainCamera = new Camera();
 }
 
 void GraphicsSystem::OnStopSystem()
@@ -110,8 +114,7 @@ void GraphicsSystem::OnStopSystem()
     // release buffers
     SDL_ReleaseGPUBuffer(gpuDevice, gpuVertexBuffer);
     SDL_ReleaseGPUBuffer(gpuDevice, gpuIndexBuffer);
-    SDL_ReleaseGPUBuffer(gpuDevice, gpuStorageBuffer);
-    SDL_ReleaseGPUTransferBuffer(gpuDevice, gpuStorageTransferBuffer);
+    SDL_ReleaseGPUBuffer(gpuDevice, gpuVertexUniformBuffer);
 
     if (depthTexture)
     {
@@ -188,7 +191,7 @@ int GraphicsSystem::Render3D()
 
     // binding Storage Buffer
     SDL_Log("[Started] Binding Vertex Storage Buffer");
-    SDL_BindGPUVertexStorageBuffers(renderPass, 0, &gpuStorageBuffer, 1);
+    SDL_BindGPUVertexStorageBuffers(renderPass, 0, &gpuVertexUniformBuffer, 1);
     SDL_Log("[End] Binding Vertex Storage Buffer");
 
     // issue a draw call
