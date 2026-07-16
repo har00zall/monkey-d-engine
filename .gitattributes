@@ -1,0 +1,23 @@
+# Set default behavior to handle text files automatically
+* text=auto
+
+# Enforce LF (Linux/Unix) line endings for all source code files
+*.cpp      text eol=lf
+*.h        text eol=lf
+*.hpp      text eol=lf
+*.c        text eol=lf
+
+# Build systems configuration line endings
+*.txt      text eol=lf
+*.cmake    text eol=lf
+.gitignore text eol=lf
+
+# Binary asset files - Treat as byte streams (Do NOT touch line endings)
+*.png      binary
+*.jpg      binary
+*.jpeg     binary
+*.bmp      binary
+*.wav      binary
+*.mp3      binary
+*.ogg      binary
+*.ttf      binary

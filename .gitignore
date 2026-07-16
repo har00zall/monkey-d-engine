@@ -1,0 +1,46 @@
+# ==========================================
+# CMake & Compilation Outputs
+# ==========================================
+build/
+CMakeUserPresets.json
+
+# ==========================================
+# Visual Studio / MSVC Junk
+# ==========================================
+.vs/
+*.sln
+*.vcxproj
+*.filters
+*.user
+*.suo
+*.db
+*.opendb
+*.ipch
+*.ilk
+*.pdb
+*.exp
+
+# ==========================================
+# Operating System Artifacts
+# ==========================================
+# Windows
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+
+# Linux
+.directory
+*~
+
+# macOS
+.DS_Store
+
+# ==========================================
+# Executables & Binaries
+# ==========================================
+*.exe
+*.dll
+*.so
+*.dylib
+*.lib
+*.a
