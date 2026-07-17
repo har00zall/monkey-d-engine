@@ -44,8 +44,12 @@ namespace MonkeyDEngine
         SDL_Log("[End] Systems Started");
 
         MeshRenderer *meshToRender = new MeshRenderer();
-        meshToRender->GetTransform().position = glm::vec3{0.1f};
+        meshToRender->m_transform.position = glm::vec3{-2.f, 0.f, 0.f};
         meshToRender->Start();
+
+        MeshRenderer *meshToRender2 = new MeshRenderer();
+        meshToRender2->m_transform.position = glm::vec3{2.f, 0.f, 0.f};
+        meshToRender2->Start();
 
         bool running = true;
         SDL_Event event{0};
@@ -70,6 +74,7 @@ namespace MonkeyDEngine
             if (SystemLocator::Instance().Get<GraphicsSystem>()->mainCamera)
                 SystemLocator::Instance().Get<GraphicsSystem>()->mainCamera->Update();
             meshToRender->Update();
+            meshToRender2->Update();
 
             // Graphics Render
             SystemLocator::Instance().Get<GraphicsSystem>()->Render3D();
