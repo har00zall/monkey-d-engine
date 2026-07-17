@@ -25,6 +25,6 @@ void Camera::Update()
         targetPosition.z + radius * sin(orbitAngle));
 }
 
-void Camera::Render()
+void Camera::OnDestroy()
 {
 }

@@ -7,13 +7,10 @@
 #include "Core/3D/Geometry.h"
 #include "Systems/GraphicsSystem.h"
 #include "Components/Camera.h"
+#include "Components/Renderer.h"
 #include "Components/MeshRenderer.h"
 
 using namespace MonkeyDEngine;
-
-MeshRenderer::MeshRenderer()
-{
-}
 
 MeshRenderer::MeshRenderer(const char *meshPath)
 {
@@ -26,14 +23,11 @@ MeshRenderer::MeshRenderer(const char *meshPath, const char *texturePath)
     m_textureFilePath = texturePath;
 }
 
-MeshRenderer::~MeshRenderer()
-{
-}
-
 void MeshRenderer::Start()
 {
-    graphicsSystem = SystemManager::Instance().GetSystem<GraphicsSystem>();
-    graphicsSystem->gpuRenderPass.meshRenderers.push_back(this);
+    Renderer::Start();
+    // graphicsSystem = SystemManager::Instance().GetSystem<GraphicsSystem>();
+    // graphicsSystem->gpuRenderPass.renderers.push_back(this);
 
     // create the vertex buffer
     gpuVertexBufferInfo.size = 0;
@@ -221,9 +215,8 @@ void MeshRenderer::Render()
 void MeshRenderer::OnDestroy()
 {
     // release buffers
-    SDL_ReleaseGPUBuffer(graphicsSystem->gpuDevice, gpuVertexBuffer);
-    SDL_ReleaseGPUBuffer(graphicsSystem->gpuDevice, gpuIndexBuffer);
-    SDL_ReleaseGPUBuffer(graphicsSystem->gpuDevice, gpuVertexUniformBuffer);
+    Renderer::OnDestroy();
+
     SDL_ReleaseGPUSampler(graphicsSystem->gpuDevice, m_textureSampler);
     SDL_ReleaseGPUTexture(graphicsSystem->gpuDevice, m_texture);
 }

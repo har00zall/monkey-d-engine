@@ -3,12 +3,11 @@
 #include <vector>
 #include <SDL3/SDL.h>
 #include <glm/glm.hpp>
-#include "Components/Camera.h"
 #include "Core/System/SystemBase.h"
 
 namespace MonkeyDEngine
 {
-    class MeshRenderer;
+    class Renderer;
     struct VertexUniformBufferObject
     {
         glm::mat4 viewProjection;
@@ -23,7 +22,7 @@ namespace MonkeyDEngine
     struct RenderPassData
     {
         SDL_GPURenderPass *activeRenderPass;
-        std::vector<MeshRenderer *> meshRenderers;
+        std::vector<Renderer *> renderers;
     };
 
     class GraphicsSystem : public SystemBase

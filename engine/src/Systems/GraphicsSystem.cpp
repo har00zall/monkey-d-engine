@@ -2,7 +2,7 @@
 #include <exception>
 #include "Context.h"
 #include "Core/3D/Geometry.h"
-#include "Components/MeshRenderer.h"
+#include "Components/Renderer.h"
 #include "Systems/GraphicsSystem.h"
 
 using namespace MonkeyDEngine;
@@ -167,7 +167,7 @@ int GraphicsSystem::Render3D()
     SDL_BindGPUGraphicsPipeline(gpuRenderPass.activeRenderPass, gpuGraphicsPipeline);
 
     SDL_Log("[Started] Render Process Mesh");
-    for (auto meshToRender : gpuRenderPass.meshRenderers)
+    for (auto meshToRender : gpuRenderPass.renderers)
         meshToRender->Render();
     SDL_Log("[End] Render Process Mesh");
 
