@@ -17,11 +17,11 @@ void Camera::Update()
 {
     orbitAngle += orbitSpeed * 0.15F;
 
-    float radius = 10.0f;
+    float radius = 30.0f;
     glm::vec3 targetPosition(0, 0, 0);
     m_transform.position = glm::vec3(
         targetPosition.x + radius * cos(orbitAngle),
-        targetPosition.y + 5.0f,
+        targetPosition.y + 15.0f,
         targetPosition.z + radius * sin(orbitAngle));
 }
 

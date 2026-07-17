@@ -1,3 +1,4 @@
+#include <vector>
 #include <SDL3/SDL.h>
 #include <glm/glm.hpp>
 #include "Core/System/SystemBase.h"
@@ -44,14 +45,20 @@ namespace MonkeyDEngine
         SDL_Log("[End] Systems Started");
 
         g_Context.mainCamera = new Camera();
+        float startingX = -3, startingZ = 3;
+        std::vector<MeshRenderer *> meshesToRender;
+        for (Uint16 x = 0; x < 2; x++)
+        {
+            for (Uint16 z = 0; z < 1; z++)
+            {
+                MeshRenderer *meshToRender = new MeshRenderer("assets/monkey_chad.gltf", "assets/monkey_diffuse.png");
+                meshToRender->m_transform.position = glm::vec3{startingX + x * 6.f, 0.f, startingZ - z * 6.f};
+                // meshToRender->m_transform.scale = glm::vec3(0.5f);
+                meshToRender->Start();
 
-        MeshRenderer *meshToRender = new MeshRenderer();
-        meshToRender->m_transform.position = glm::vec3{-2.f, 0.f, 0.f};
-        meshToRender->Start();
-
-        MeshRenderer *meshToRender2 = new MeshRenderer();
-        meshToRender2->m_transform.position = glm::vec3{2.f, 0.f, 0.f};
-        meshToRender2->Start();
+                meshesToRender.push_back(meshToRender);
+            }
+        }
 
         bool running = true;
         SDL_Event event{0};
@@ -75,8 +82,8 @@ namespace MonkeyDEngine
             // Game Update
             if (g_Context.mainCamera)
                 g_Context.mainCamera->Update();
-            meshToRender->Update();
-            meshToRender2->Update();
+            for (auto meshToRender : meshesToRender)
+                meshToRender->Update();
 
             // Graphics Render
             SystemLocator::Instance().Get<GraphicsSystem>()->Render3D();
@@ -84,8 +91,8 @@ namespace MonkeyDEngine
         }
 
         // Destroy Resources
-        meshToRender->OnDestroy();
-        meshToRender2->OnDestroy();
+        for (auto meshToRender : meshesToRender)
+            meshToRender->OnDestroy();
 
         SystemLocator::Instance().Reset();
 

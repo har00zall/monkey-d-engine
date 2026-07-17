@@ -1,3 +1,6 @@
+
+#include <random>
+#include <limits>
 #include <SDL3/SDL.h>
 #include "Context.h"
 #include "Core/System/SystemLocator.h"
@@ -10,6 +13,17 @@ using namespace MonkeyDEngine;
 
 MeshRenderer::MeshRenderer()
 {
+}
+
+MeshRenderer::MeshRenderer(const char *meshPath)
+{
+    m_meshFilePath = meshPath;
+}
+
+MeshRenderer::MeshRenderer(const char *meshPath, const char *texturePath)
+{
+    m_meshFilePath = meshPath;
+    m_textureFilePath = texturePath;
 }
 
 MeshRenderer::~MeshRenderer()
@@ -32,12 +46,12 @@ void MeshRenderer::Start()
     SDL_Log("indexBufferInfo has %d size", gpuIndexBufferInfo.size);
 
     // load geometry
-    LoadMesh("assets/monkey.gltf", m_mesh);
+    LoadMesh(m_meshFilePath.c_str(), m_mesh);
     gpuVertexBuffer = SDL_CreateGPUBuffer(graphicsSystem->gpuDevice, &gpuVertexBufferInfo);
     gpuIndexBuffer = SDL_CreateGPUBuffer(graphicsSystem->gpuDevice, &gpuIndexBufferInfo);
 
     // Load texture
-    SDL_Surface *surface = SDL_LoadPNG("assets/monkey.png");
+    SDL_Surface *surface = SDL_LoadPNG(m_textureFilePath.c_str());
     SDL_Surface *rgbaSurface = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
     SDL_DestroySurface(surface);
 
@@ -133,10 +147,27 @@ void MeshRenderer::Start()
 
     // Clean up RAM resources
     SDL_DestroySurface(rgbaSurface);
+
+    std::random_device rd;
+
+    // Mersenne Twister engine seeded with random_device
+    std::mt19937 gen(rd());
+
+    // Define the range [min, max]
+    int min = 1;
+    int max = 100;
+
+    // Uniform distribution in the given range
+    std::uniform_int_distribution<> dist(min, max);
+
+    // Generate and print a random number
+    int randomNumber = dist(gen);
+    m_randomRotationSpeed = (float)(max / randomNumber);
 }
 
 void MeshRenderer::Update()
 {
+    m_transform.rotation.y += m_randomRotationSpeed * 0.15f;
 }
 
 void MeshRenderer::Render()
@@ -180,11 +211,8 @@ void MeshRenderer::Render()
     SDL_PushGPUFragmentUniformData(graphicsSystem->gpuCommandBuffer, 0, &fragmentUniformBufferData, sizeof(FragmentUniformBufferData));
 
     VertexUniformBufferObject vertexUniformBufferObject{};
-    SDL_Log("assign viewProjection to vertex buffer object");
     vertexUniformBufferObject.viewProjection = g_Context.mainCamera->GetTransform().GetViewProjectionMatrix();
-    SDL_Log("assign model to vertex buffer object");
     vertexUniformBufferObject.model = m_transform.GetModelMatrix();
-    SDL_Log("push vertex buffer object");
     SDL_PushGPUVertexUniformData(graphicsSystem->gpuCommandBuffer, 0, &vertexUniformBufferObject, sizeof(VertexUniformBufferObject));
 
     SDL_DrawGPUIndexedPrimitives(graphicsSystem->gpuRenderPass.activeRenderPass, m_mesh.GetIndexCount(), 1, 0, 0, 0);
