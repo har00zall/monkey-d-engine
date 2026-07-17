@@ -55,6 +55,9 @@ namespace MonkeyDEngine
             {
                 switch (event.type)
                 {
+                case SDL_EVENT_WINDOW_RESIZED:
+                    SystemLocator::Instance().Get<GraphicsSystem>()->CreateDepthTexture();
+                    break;
                 case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
                     running = false;
                     break;

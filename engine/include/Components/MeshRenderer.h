@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+#include <SDL3/SDL.h>
 #include "Components/Component.h"
 #include "Core/3D/Geometry.h"
 
@@ -9,10 +11,10 @@ namespace MonkeyDEngine
     class MeshRenderer : public Component
     {
     protected:
-        Transform m_transform{};
         Mesh m_mesh;
-
-        // std::shared_ptr<GraphicsSystem> graphicsSystem = nullptr;
+        SDL_GPUTexture *m_texture;
+        SDL_GPUSampler *m_textureSampler;
+        std::shared_ptr<GraphicsSystem> graphicsSystem = nullptr;
 
         void LoadMesh(const char *filePath, Mesh &outMesh);
 
@@ -21,8 +23,6 @@ namespace MonkeyDEngine
         MeshRenderer(Mesh mesh) { m_mesh = mesh; }
 
         ~MeshRenderer();
-
-        Transform GetTransform() const { return m_transform; }
 
         virtual void Start() override;
         virtual void Update() override;

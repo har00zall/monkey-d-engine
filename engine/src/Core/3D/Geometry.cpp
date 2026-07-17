@@ -78,11 +78,18 @@ bool Geometry::LoadGLTF(const char *filePath,
         SDL_reinterpret_cast(const float *,
                              &model.buffers[normalBufferView.buffer].data[normalBufferView.byteOffset + normalAccessor.byteOffset]);
 
+    const tinygltf::Accessor uvAccessor = model.accessors[primitive.attributes.at("TEXCOORD_0")];
+    const tinygltf::BufferView uvBufferView = model.bufferViews[uvAccessor.bufferView];
+    const float *uvData =
+        SDL_reinterpret_cast(const float *,
+                             &model.buffers[uvBufferView.buffer].data[uvBufferView.byteOffset + uvAccessor.byteOffset]);
+
     for (size_t i = 0; i < positionAccessor.count; ++i)
     {
         Vertex vertex;
         vertex.position = glm::vec3(positionData[i * 3 + 0], positionData[i * 3 + 1], positionData[i * 3 + 2]);
         vertex.normal = glm::vec3(normalData[i * 3 + 0], normalData[i * 3 + 1], normalData[i * 3 + 2]);
+        vertex.uv = glm::vec2(uvData[i * 2 + 0], uvData[i * 2 + 1]);
         outVertices.push_back(vertex);
     }
 

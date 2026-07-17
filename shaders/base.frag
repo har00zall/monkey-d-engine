@@ -1,13 +1,15 @@
 #version 450
 layout(location = 0) in vec3 v_fragPos;
 layout(location = 1) in vec3 v_normal;
+layout(location = 2) in vec2 v_uv;
 
 layout(std140, set = 3, binding = 0) uniform FregmentUniformData {
     vec3 viewPosition;
 };
 
-layout(location = 0) out vec4 outColor;
+layout(set = 2, binding = 0) uniform sampler2D texSampler;
 
+layout(location = 0) out vec4 outColor;
 
 void main() {
     // Simple directional light simulation for now
@@ -19,13 +21,14 @@ void main() {
 
     vec3 ambient = 0.1 * lightColor;
 
-    float diff = max(dot(norm, lightDir), 0.0);
+    float diff = max(dot(norm, lightDir), 0.15);
     vec3 diffuse = diff * lightColor;
 
     vec3 halfwayDir = normalize(lightDir + viewDir);
     float spec = pow(max(dot(norm, halfwayDir), 0.0), 0.75);
     vec3 specular = spec * lightColor;
 
-    vec3 result = (ambient + diffuse + specular) * vec3(0.1, 0.3, 0.4);
+    vec4 texColor = texture(texSampler, v_uv);
+    vec3 result = texColor.rgb * (ambient + diffuse + specular) * vec3(1, 1, 1);
     outColor = vec4(result, 1.0);
 }

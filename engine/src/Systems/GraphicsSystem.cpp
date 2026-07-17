@@ -22,20 +22,10 @@ void GraphicsSystem::OnStartSystem()
     SDL_ClaimWindowForGPUDevice(gpuDevice, g_Context.window);
 
     SDL_GPUShader *vertexShader = CreateShader("shaders/base.vert.spv", SDL_GPU_SHADERFORMAT_SPIRV, SDL_GPU_SHADERSTAGE_VERTEX, 0, 0, 0, 1);
-    SDL_GPUShader *fragmentShader = CreateShader("shaders/base.frag.spv", SDL_GPU_SHADERFORMAT_SPIRV, SDL_GPU_SHADERSTAGE_FRAGMENT, 0, 0, 0, 1);
+    SDL_GPUShader *fragmentShader = CreateShader("shaders/base.frag.spv", SDL_GPU_SHADERFORMAT_SPIRV, SDL_GPU_SHADERSTAGE_FRAGMENT, 1, 0, 0, 1);
 
     // create depth texture
-    int w, h;
-    SDL_GetWindowSizeInPixels(g_Context.window, &w, &h);
-    SDL_GPUTextureCreateInfo depthTextureCreateInfo{};
-    depthTextureCreateInfo.type = SDL_GPU_TEXTURETYPE_2D;
-    depthTextureCreateInfo.format = SDL_GPU_TEXTUREFORMAT_D32_FLOAT;
-    depthTextureCreateInfo.width = w;
-    depthTextureCreateInfo.height = h;
-    depthTextureCreateInfo.layer_count_or_depth = 1;
-    depthTextureCreateInfo.num_levels = 1;
-    depthTextureCreateInfo.usage = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
-    depthTexture = SDL_CreateGPUTexture(gpuDevice, &depthTextureCreateInfo);
+    CreateDepthTexture();
 
     // describe the vertex buffers
     SDL_GPUVertexBufferDescription vertexBufferDesctiptions[1];
@@ -45,7 +35,7 @@ void GraphicsSystem::OnStartSystem()
     vertexBufferDesctiptions[0].pitch = sizeof(Vertex);
 
     // describe the vertex attribute
-    SDL_GPUVertexAttribute vertexAttributes[2];
+    SDL_GPUVertexAttribute vertexAttributes[3];
     // inPosition
     vertexAttributes[0].buffer_slot = 0;
     vertexAttributes[0].location = 0;
@@ -56,6 +46,11 @@ void GraphicsSystem::OnStartSystem()
     vertexAttributes[1].location = 1;
     vertexAttributes[1].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3;
     vertexAttributes[1].offset = sizeof(float) * 3;
+    // in UV
+    vertexAttributes[2].buffer_slot = 0;
+    vertexAttributes[2].location = 2;
+    vertexAttributes[2].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2;
+    vertexAttributes[2].offset = sizeof(float) * 6;
 
     // describe the color target
     SDL_GPUColorTargetDescription colorTargetDescriptions[1];
@@ -83,7 +78,7 @@ void GraphicsSystem::OnStartSystem()
     pipelineInfo.target_info.has_depth_stencil_target = true;
     pipelineInfo.vertex_input_state.num_vertex_buffers = 1;
     pipelineInfo.vertex_input_state.vertex_buffer_descriptions = vertexBufferDesctiptions;
-    pipelineInfo.vertex_input_state.num_vertex_attributes = 2;
+    pipelineInfo.vertex_input_state.num_vertex_attributes = 3;
     pipelineInfo.vertex_input_state.vertex_attributes = vertexAttributes;
     pipelineInfo.target_info.num_color_targets = 1;
     pipelineInfo.target_info.color_target_descriptions = colorTargetDescriptions;
@@ -117,9 +112,7 @@ void GraphicsSystem::OnStopSystem()
     SDL_ReleaseGPUBuffer(gpuDevice, gpuVertexUniformBuffer);
 
     if (depthTexture)
-    {
         SDL_ReleaseGPUTexture(gpuDevice, depthTexture);
-    }
 
     // release the pipeline
     SDL_ReleaseGPUGraphicsPipeline(gpuDevice, gpuGraphicsPipeline);
@@ -202,6 +195,28 @@ int GraphicsSystem::Render3D()
     SDL_Log("[End] Rendered 3D");
 
     return SDL_APP_CONTINUE;
+}
+
+void GraphicsSystem::CreateDepthTexture()
+{
+    if (depthTexture)
+    {
+        SDL_ReleaseGPUTexture(gpuDevice, depthTexture);
+        depthTexture = nullptr;
+    }
+
+    // create depth texture
+    int w, h;
+    SDL_GetWindowSizeInPixels(g_Context.window, &w, &h);
+    SDL_GPUTextureCreateInfo depthTextureCreateInfo{};
+    depthTextureCreateInfo.type = SDL_GPU_TEXTURETYPE_2D;
+    depthTextureCreateInfo.format = SDL_GPU_TEXTUREFORMAT_D32_FLOAT;
+    depthTextureCreateInfo.width = w;
+    depthTextureCreateInfo.height = h;
+    depthTextureCreateInfo.layer_count_or_depth = 1;
+    depthTextureCreateInfo.num_levels = 1;
+    depthTextureCreateInfo.usage = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
+    depthTexture = SDL_CreateGPUTexture(gpuDevice, &depthTextureCreateInfo);
 }
 
 SDL_GPUShader *GraphicsSystem::CreateShader(

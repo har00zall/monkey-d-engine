@@ -29,6 +29,8 @@ namespace MonkeyDEngine
     class GraphicsSystem : public SystemBase
     {
     public:
+        ~GraphicsSystem() = default;
+
         SDL_GPUDevice *gpuDevice;
 
         SDL_GPUBufferCreateInfo gpuVertexBufferInfo;
@@ -47,6 +49,7 @@ namespace MonkeyDEngine
         Camera *mainCamera = new Camera();
 
         int Render3D();
+        void CreateDepthTexture();
 
     protected:
         void OnStartSystem() override;
