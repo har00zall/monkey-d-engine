@@ -2,7 +2,7 @@
 #include <SDL3/SDL.h>
 #include <glm/glm.hpp>
 #include "Core/System/SystemBase.h"
-#include "Core/System/SystemLocator.h"
+#include "Core/System/SystemManager.h"
 #include "Systems/GraphicsSystem.h"
 #include "Components/Camera.h"
 #include "Components/MeshRenderer.h"
@@ -21,12 +21,6 @@ namespace MonkeyDEngine
         }
         SDL_Log("System has been initialized");
 
-        // Init Engine System
-        SDL_Log("[Starting] Creating Systems");
-        SystemLocator::Instance().Provide<GraphicsSystem>(
-            std::make_shared<GraphicsSystem>());
-        SDL_Log("[End] Systems Created");
-
         // Init Window
         g_Context.window = SDL_CreateWindow(
             "SDL3 Hello World",
@@ -39,10 +33,13 @@ namespace MonkeyDEngine
         }
         SDL_Log("Window has been created");
 
-        SDL_Log("[Starting] Starting Systems");
-        if (SystemLocator::Instance().Has<GraphicsSystem>())
-            SystemLocator::Instance().Get<GraphicsSystem>()->StartSystem();
-        SDL_Log("[End] Systems Started");
+        // Init Engine System
+        SDL_Log("[Starting] Register and Start Systems");
+        SystemManager::Instance()
+            .RegisterSystems({
+                {.autoStart = true, .type = typeid(GraphicsSystem), .instance = std::make_shared<GraphicsSystem>()},
+            });
+        SDL_Log("[End] Systems Registered and Started");
 
         g_Context.mainCamera = new Camera();
         float startingX = -3, startingZ = 3;
@@ -69,7 +66,7 @@ namespace MonkeyDEngine
                 switch (event.type)
                 {
                 case SDL_EVENT_WINDOW_RESIZED:
-                    SystemLocator::Instance().Get<GraphicsSystem>()->CreateDepthTexture();
+                    SystemManager::Instance().GetSystem<GraphicsSystem>()->CreateDepthTexture();
                     break;
                 case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
                     running = false;
@@ -86,7 +83,7 @@ namespace MonkeyDEngine
                 meshToRender->Update();
 
             // Graphics Render
-            SystemLocator::Instance().Get<GraphicsSystem>()->Render3D();
+            SystemManager::Instance().GetSystem<GraphicsSystem>()->Render3D();
             // End Rendering
         }
 
@@ -94,7 +91,7 @@ namespace MonkeyDEngine
         for (auto meshToRender : meshesToRender)
             meshToRender->OnDestroy();
 
-        SystemLocator::Instance().Reset();
+        SystemManager::Instance().Dispose();
 
         SDL_DestroyWindow(g_Context.window);
         SDL_Quit();

@@ -24,7 +24,7 @@ namespace MonkeyDEngine
         SDL_GPUTexture *m_texture;
         SDL_GPUSampler *m_textureSampler;
 
-        std::shared_ptr<GraphicsSystem> graphicsSystem = nullptr;
+        GraphicsSystem *graphicsSystem = nullptr;
 
         float m_randomRotationSpeed;
 

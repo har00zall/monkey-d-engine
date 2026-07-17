@@ -3,7 +3,7 @@
 #include <limits>
 #include <SDL3/SDL.h>
 #include "Context.h"
-#include "Core/System/SystemLocator.h"
+#include "Core/System/SystemManager.h"
 #include "Core/3D/Geometry.h"
 #include "Systems/GraphicsSystem.h"
 #include "Components/Camera.h"
@@ -32,7 +32,7 @@ MeshRenderer::~MeshRenderer()
 
 void MeshRenderer::Start()
 {
-    graphicsSystem = SystemLocator::Instance().Get<GraphicsSystem>();
+    graphicsSystem = SystemManager::Instance().GetSystem<GraphicsSystem>();
     graphicsSystem->gpuRenderPass.meshRenderers.push_back(this);
 
     // create the vertex buffer
@@ -172,7 +172,7 @@ void MeshRenderer::Update()
 
 void MeshRenderer::Render()
 {
-    // graphicsSystem = SystemLocator::Instance().Get<GraphicsSystem>();
+    // graphicsSystem = SystemManager::Instance().Get<GraphicsSystem>();
 
     // object matrices
     SDL_Log("Creating vertex buffer object");
@@ -230,7 +230,7 @@ void MeshRenderer::OnDestroy()
 
 void MeshRenderer::LoadMesh(const char *filePath, Mesh &outMesh)
 {
-    // graphicsSystem = SystemLocator::Instance().Get<GraphicsSystem>();
+    // graphicsSystem = SystemManager::Instance().Get<GraphicsSystem>();
     std::vector<Vertex> vertices;
     std::vector<Uint32> indices;
     if (!Geometry::LoadGLTF(filePath, vertices, indices))

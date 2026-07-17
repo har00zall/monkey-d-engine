@@ -1,7 +1,7 @@
 #pragma once
 
 #include <type_traits>
-#include "Core/System/SystemLocator.h"
+#include "Core/System/SystemManager.h"
 
 namespace MonkeyDEngine
 {
