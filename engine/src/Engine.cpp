@@ -43,6 +43,8 @@ namespace MonkeyDEngine
             SystemLocator::Instance().Get<GraphicsSystem>()->StartSystem();
         SDL_Log("[End] Systems Started");
 
+        g_Context.mainCamera = new Camera();
+
         MeshRenderer *meshToRender = new MeshRenderer();
         meshToRender->m_transform.position = glm::vec3{-2.f, 0.f, 0.f};
         meshToRender->Start();
@@ -71,8 +73,8 @@ namespace MonkeyDEngine
             }
 
             // Game Update
-            if (SystemLocator::Instance().Get<GraphicsSystem>()->mainCamera)
-                SystemLocator::Instance().Get<GraphicsSystem>()->mainCamera->Update();
+            if (g_Context.mainCamera)
+                g_Context.mainCamera->Update();
             meshToRender->Update();
             meshToRender2->Update();
 
@@ -80,6 +82,10 @@ namespace MonkeyDEngine
             SystemLocator::Instance().Get<GraphicsSystem>()->Render3D();
             // End Rendering
         }
+
+        // Destroy Resources
+        meshToRender->OnDestroy();
+        meshToRender2->OnDestroy();
 
         SystemLocator::Instance().Reset();
 

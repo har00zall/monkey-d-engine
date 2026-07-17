@@ -12,8 +12,16 @@ namespace MonkeyDEngine
     {
     protected:
         Mesh m_mesh;
+
+        SDL_GPUBufferCreateInfo gpuVertexBufferInfo;
+        SDL_GPUBuffer *gpuVertexBuffer;
+        SDL_GPUBufferCreateInfo gpuIndexBufferInfo;
+        SDL_GPUBuffer *gpuIndexBuffer;
+        SDL_GPUBufferCreateInfo gpuVertexUniformBufferInfo;
+        SDL_GPUBuffer *gpuVertexUniformBuffer;
         SDL_GPUTexture *m_texture;
         SDL_GPUSampler *m_textureSampler;
+
         std::shared_ptr<GraphicsSystem> graphicsSystem = nullptr;
 
         void LoadMesh(const char *filePath, Mesh &outMesh);
@@ -27,5 +35,6 @@ namespace MonkeyDEngine
         virtual void Start() override;
         virtual void Update() override;
         virtual void Render() override;
+        virtual void OnDestroy() override;
     };
 };

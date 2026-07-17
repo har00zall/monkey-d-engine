@@ -11,8 +11,9 @@ namespace MonkeyDEngine
         Transform m_transform{};
         Transform GetTransform() const { return m_transform; }
 
-        virtual void Start() = 0;
-        virtual void Update() = 0;
-        virtual void Render() = 0;
+        virtual void Start();
+        virtual void Update();
+        virtual void Render();
+        virtual void OnDestroy();
     };
 };

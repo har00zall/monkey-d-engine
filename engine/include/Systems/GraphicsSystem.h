@@ -32,21 +32,11 @@ namespace MonkeyDEngine
         ~GraphicsSystem() = default;
 
         SDL_GPUDevice *gpuDevice;
-
-        SDL_GPUBufferCreateInfo gpuVertexBufferInfo;
-        SDL_GPUBuffer *gpuVertexBuffer;
-        SDL_GPUBufferCreateInfo gpuIndexBufferInfo;
-        SDL_GPUBuffer *gpuIndexBuffer;
-        SDL_GPUBufferCreateInfo gpuVertexUniformBufferInfo;
-        SDL_GPUBuffer *gpuVertexUniformBuffer;
-
         SDL_GPUTexture *depthTexture; // z-buffer
 
         SDL_GPUGraphicsPipeline *gpuGraphicsPipeline;
         SDL_GPUCommandBuffer *gpuCommandBuffer;
         RenderPassData gpuRenderPass{};
-
-        Camera *mainCamera = new Camera();
 
         int Render3D();
         void CreateDepthTexture();

@@ -1,5 +1,5 @@
 #include <SDL3/SDL.h>
-#include "Engine.h"
+#include "Components/Camera.h"
 
 namespace MonkeyDEngine
 {
@@ -12,6 +12,7 @@ namespace MonkeyDEngine
     struct Context
     {
         SDL_Window *window;
+        Camera *mainCamera;
 
         Size swapchainTextureSize{};
     };

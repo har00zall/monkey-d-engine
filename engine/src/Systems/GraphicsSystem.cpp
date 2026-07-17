@@ -106,10 +106,6 @@ void GraphicsSystem::OnStartSystem()
 void GraphicsSystem::OnStopSystem()
 {
     SDL_Log("\t\t\t\t[Starting] Clearing Graphics System");
-    // release buffers
-    SDL_ReleaseGPUBuffer(gpuDevice, gpuVertexBuffer);
-    SDL_ReleaseGPUBuffer(gpuDevice, gpuIndexBuffer);
-    SDL_ReleaseGPUBuffer(gpuDevice, gpuVertexUniformBuffer);
 
     if (depthTexture)
         SDL_ReleaseGPUTexture(gpuDevice, depthTexture);
@@ -169,20 +165,6 @@ int GraphicsSystem::Render3D()
     // draw calls go here
     SDL_Log("[Started] Binding Pipeline");
     SDL_BindGPUGraphicsPipeline(gpuRenderPass.activeRenderPass, gpuGraphicsPipeline);
-
-    // binding vertex buffer
-    SDL_GPUBufferBinding vertexBufferBindings[1];
-    vertexBufferBindings[0].buffer = gpuVertexBuffer;
-    vertexBufferBindings[0].offset = 0;
-    SDL_Log("[Started] Binding Vertex Buffer");
-    SDL_BindGPUVertexBuffers(gpuRenderPass.activeRenderPass, 0, vertexBufferBindings, 1);
-
-    // binding index buffer
-    SDL_GPUBufferBinding indexBufferBindings;
-    indexBufferBindings.buffer = gpuIndexBuffer;
-    indexBufferBindings.offset = 0;
-    SDL_Log("[Started] Binding Index Buffer");
-    SDL_BindGPUIndexBuffer(gpuRenderPass.activeRenderPass, &indexBufferBindings, SDL_GPU_INDEXELEMENTSIZE_32BIT);
 
     SDL_Log("[Started] Render Process Mesh");
     for (auto meshToRender : gpuRenderPass.meshRenderers)
