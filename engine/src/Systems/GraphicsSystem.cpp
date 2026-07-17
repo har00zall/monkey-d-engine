@@ -148,7 +148,7 @@ int GraphicsSystem::Render3D()
     // create the color target (now +depth)
     SDL_Log("[Started] Render Pass Creation");
     SDL_GPUColorTargetInfo colorTargetInfo{};
-    colorTargetInfo.clear_color = {0.1f, 0.1f, 0.1f, 1.0f};
+    colorTargetInfo.clear_color = {186.f / 255.f, 221.f / 255.f, 250.f / 250.f, 1.0f};
     colorTargetInfo.load_op = SDL_GPU_LOADOP_CLEAR;
     colorTargetInfo.store_op = SDL_GPU_STOREOP_STORE;
     colorTargetInfo.texture = swapchainTexture;
