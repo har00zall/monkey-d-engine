@@ -162,7 +162,7 @@ void MeshRenderer::Start()
 
 void MeshRenderer::Update()
 {
-    m_transform.rotation.y += m_randomRotationSpeed * Time::deltaTime;
+    transform.rotation.y += m_randomRotationSpeed * Time::deltaTime;
 }
 
 void MeshRenderer::Render()
@@ -202,12 +202,12 @@ void MeshRenderer::Render()
     SDL_BindGPUFragmentSamplers(graphicsSystem->gpuRenderPass.activeRenderPass, 0, &textureBindingInfo, 1);
 
     FragmentUniformBufferData fragmentUniformBufferData{};
-    fragmentUniformBufferData.viewPosition = g_Context.mainCamera->GetTransform().position;
+    fragmentUniformBufferData.viewPosition = g_Context.mainCamera->transform.position;
     SDL_PushGPUFragmentUniformData(graphicsSystem->gpuCommandBuffer, 0, &fragmentUniformBufferData, sizeof(FragmentUniformBufferData));
 
     VertexUniformBufferObject vertexUniformBufferObject{};
-    vertexUniformBufferObject.viewProjection = g_Context.mainCamera->GetTransform().GetViewProjectionMatrix();
-    vertexUniformBufferObject.model = m_transform.GetModelMatrix();
+    vertexUniformBufferObject.viewProjection = g_Context.mainCamera->transform.GetViewProjectionMatrix();
+    vertexUniformBufferObject.model = transform.GetModelMatrix();
     SDL_PushGPUVertexUniformData(graphicsSystem->gpuCommandBuffer, 0, &vertexUniformBufferObject, sizeof(VertexUniformBufferObject));
 
     SDL_DrawGPUIndexedPrimitives(graphicsSystem->gpuRenderPass.activeRenderPass, m_mesh.GetIndexCount(), 1, 0, 0, 0);

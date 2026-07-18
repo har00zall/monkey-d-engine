@@ -1,4 +1,7 @@
 #include <vector>
+#include <memory>
+#include <typeindex>
+#include <concepts>
 #include "Components/Component.h"
 #include "Systems/SceneSystem.h"
 
@@ -135,12 +138,40 @@ void Scene::Dispose()
     entities.clear();
 }
 
-void Entity::Start()
+template <typename T>
+    requires std::derived_from<T, Component>
+void Entity::RemoveComponent()
 {
-    if (components.empty())
+    if (m_components.empty())
         return;
 
-    for (auto &component : components)
+    std::shared_ptr<Component> componentToRemove = nullptr;
+    for (auto &component : m_components)
+    {
+        if (std::type_index(typeid(component)) == std::type_index(typeid(T)))
+        {
+            componentToRemove = std::move(component);
+            break;
+        }
+    }
+
+    if (!componentToRemove)
+        return;
+
+    componentToRemove->OnDestroy();
+    m_components.erase(
+        std::remove(m_components.begin(), m_components.end(), componentToRemove), m_components.end());
+
+    componentToRemove.reset();
+    componentToRemove = nullptr;
+}
+
+void Entity::Start()
+{
+    if (m_components.empty())
+        return;
+
+    for (auto &component : m_components)
     {
         component->Start();
     }
@@ -148,10 +179,10 @@ void Entity::Start()
 
 void Entity::Update()
 {
-    if (components.empty())
+    if (m_components.empty())
         return;
 
-    for (auto &component : components)
+    for (auto &component : m_components)
     {
         component->Update();
     }
@@ -159,10 +190,10 @@ void Entity::Update()
 
 void Entity::OnDestroy()
 {
-    if (components.empty())
+    if (m_components.empty())
         return;
 
-    for (auto &component : components)
+    for (auto &component : m_components)
     {
         component->OnDestroy();
     }

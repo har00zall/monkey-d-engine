@@ -1,0 +1,8 @@
+// raddbg 0.9.28 project file
+
+target:
+{
+  executable: "../build/sandbox/Debug/Sandbox.exe"
+  working_directory: "../build/sandbox/Debug"
+  enabled: 1
+}

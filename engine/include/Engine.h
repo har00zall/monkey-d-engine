@@ -6,7 +6,7 @@
 
 namespace MonkeyDEngine
 {
-    struct Scene;
+    class Scene;
     struct EngineInitData
     {
         const char *title;

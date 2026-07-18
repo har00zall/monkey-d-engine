@@ -5,14 +5,18 @@
 
 namespace MonkeyDEngine
 {
+    class Entity;
     class Component
     {
     public:
-        Transform m_transform{};
-        Transform GetTransform() const { return m_transform; }
+        Component() = default;
+        virtual ~Component() = default;
 
-        virtual void Start() = 0;
-        virtual void Update() = 0;
-        virtual void OnDestroy() = 0;
+        Entity *owner;
+        Transform transform{};
+
+        virtual void Start();
+        virtual void Update();
+        virtual void OnDestroy();
     };
 };

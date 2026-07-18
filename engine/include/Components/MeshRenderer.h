@@ -30,6 +30,9 @@ namespace MonkeyDEngine
 
         virtual ~MeshRenderer() = default;
 
+        inline void SetMesh(const char *meshPath) { m_meshFilePath = meshPath; }
+        inline void SetTexture(const char *texturePath) { m_textureFilePath = texturePath; }
+
         void Start() override;
         void Update() override;
         void Render() override;

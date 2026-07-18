@@ -1,5 +1,6 @@
 #include <vector>
 #include <memory>
+#include <typeindex>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <SDL3/SDL.h>
@@ -7,6 +8,7 @@
 #include "Engine.h"
 #include "Core/3D/Geometry.h"
 #include "Components/Camera.h"
+#include "Components/CameraController.h"
 #include "Components/MeshRenderer.h"
 #include "Systems/SceneSystem.h"
 
@@ -18,9 +20,7 @@ int main(int argc, char *argv[])
     auto mainScene = std::make_shared<Scene>();
 
     // Adding main camera
-    auto cameraEntity = std::make_shared<Entity>();
-    auto mainCameraComponent = std::make_shared<Camera>();
-    cameraEntity->components.push_back(mainCameraComponent);
+    auto cameraEntity = Entity::Create<Camera, CameraController>();
     mainScene->entities.push_back(cameraEntity);
 
     // Adding monkey objects ( 1 object = 1 draw call)
@@ -29,29 +29,31 @@ int main(int argc, char *argv[])
     {
         for (Uint16 z = 0; z < 1; z++)
         {
-            auto entity = std::make_shared<Entity>();
-            auto meshToRender = std::make_shared<MeshRenderer>("assets/monkey_chad.gltf", "assets/monkey_diffuse.png");
-            meshToRender->m_transform.position = glm::vec3{startingX + x * 6.f, 0.f, startingZ - z * 6.f};
+            auto entity = Entity::Create();
+            auto meshToRender = entity->AddComponent<MeshRenderer>();
+            meshToRender->SetMesh("assets/monkey_chad.gltf");
+            meshToRender->SetTexture("assets/monkey_diffuse.png");
+            meshToRender->transform.position = glm::vec3{startingX + x * 6.f, 0.f, startingZ - z * 6.f};
 
-            entity->components.push_back(meshToRender);
             mainScene->entities.push_back(entity);
         }
     }
 
+    // Added additional sceneepi
     auto secondScene = std::make_shared<Scene>();
-
     // Adding monkey objects ( 1 object = 1 draw call)
     float secondStartingX = -3, secondStartingZ = 6;
     for (Uint16 x = 0; x < 2; x++)
     {
         for (Uint16 z = 1; z < 2; z++)
         {
-            auto entity = std::make_shared<Entity>();
-            auto meshToRender = std::make_shared<MeshRenderer>("assets/monkey_chad.gltf", "assets/monkey_diffuse.png");
-            meshToRender->m_transform.position = glm::vec3{startingX + x * 6.f, 0.f, startingZ - z * 6.f};
+            auto entity = Entity::Create();
+            auto meshToRender = entity->AddComponent<MeshRenderer>();
+            meshToRender->SetMesh("assets/monkey_chad.gltf");
+            meshToRender->SetTexture("assets/monkey_diffuse.png");
+            meshToRender->transform.position = glm::vec3{startingX + x * 6.f, 0.f, startingZ - z * 6.f};
 
-            entity->components.push_back(meshToRender);
-            secondScene->entities.push_back(entity);
+            mainScene->entities.push_back(entity);
         }
     }
 
