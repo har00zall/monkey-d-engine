@@ -1,30 +1,56 @@
 #include "Context.h"
 #include "Core/OS/Time.h"
+#include "Core/3D/Geometry.h"
 #include "Components/CameraController.h"
 
 using namespace MonkeyDEngine;
 
 void CameraController::Start()
 {
-    transform.position = glm::vec3(0.0f, 2.5f, 8.0f);
+    SDL_Log("Called Camera Controller. Start");
+    SDL_CaptureMouse(false);
+
+    g_Context.mainCamera->transform.SetPosition({0.0f, 20, -25.0f});
+    g_Context.mainCamera->transform.LookAt({0.f, 0.f, 0.f});
+    // g_Context.mainCamera->transform.SetRotation({0.0f, -90, 8.0f});
 }
 
 void CameraController::Update()
 {
-    const bool *keyStates = SDL_GetKeyboardState(NULL);
-    int direction = 0;
+    float currentMouseX, currentMouseY;
+    auto keyStates = SDL_GetKeyboardState(NULL);
+    auto mouseStates = SDL_GetMouseState(&currentMouseX, &currentMouseY);
+    deltaMousePositionX = currentMouseX - previousX;
+    deltaMousePositionY = currentMouseY - previousY;
+
+    int directionH = 0;
+    int directionF = 0;
+    int directionV = 0;
 
     if (keyStates[SDL_SCANCODE_A])
-        direction = 1;
+        directionH = 1;
     if (keyStates[SDL_SCANCODE_D])
-        direction = -1;
+        directionH = -1;
+    if (keyStates[SDL_SCANCODE_W])
+        directionF = 1;
+    if (keyStates[SDL_SCANCODE_S])
+        directionF = -1;
+    if (keyStates[SDL_SCANCODE_E])
+        directionV = 1;
+    if (keyStates[SDL_SCANCODE_Q])
+        directionV = -1;
 
-    orbitAngle += direction * orbitSpeed * Time::deltaTime;
+    g_Context.mainCamera->transform.Translate(
+        (directionH * movementSpeed * Time::deltaTime * -g_Context.mainCamera->transform.GetRight()) +
+        (directionF * movementSpeed * Time::deltaTime * g_Context.mainCamera->transform.GetForward()) +
+        (directionV * movementSpeed * Time::deltaTime * g_Context.mainCamera->transform.GetUp()));
 
-    float radius = 30.0f;
-    glm::vec3 targetPosition(0, 0, 0);
-    g_Context.mainCamera->transform.position = glm::vec3(
-        targetPosition.x + radius * cos(orbitAngle),
-        targetPosition.y + 15.0f,
-        targetPosition.z + radius * sin(orbitAngle));
+    if (mouseStates == SDL_BUTTON_LEFT)
+    {
+        g_Context.mainCamera->transform.Rotate({0.f, deltaMousePositionX * lookSpeed * Time::deltaTime, 0.f});
+        g_Context.mainCamera->transform.Rotate({deltaMousePositionY * -lookSpeed * Time::deltaTime, 0.f, 0.f});
+    }
+
+    previousX = currentMouseX;
+    previousY = currentMouseY;
 }

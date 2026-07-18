@@ -43,15 +43,18 @@ namespace MonkeyDEngine
         std::shared_ptr<T> GetComponent()
         {
             if (m_components.empty())
-                return;
+                return nullptr;
 
-            auto it = std::find(m_components.begin(), m_components.end(), std::type_index(typeid(std::shared_ptr<T>)));
+            auto it = std::find_if(m_components.begin(), m_components.end(), [](const auto &comp)
+                                   { return typeid(*comp) == typeid(T); });
+
             if (it == m_components.end())
             {
                 throw std::runtime_error(
                     std::string("No Component: ") + typeid(T).name());
             }
-            return static_cast<T *>(it->second.get());
+
+            return std::static_pointer_cast<T>(*it);
         }
 
         template <typename T>

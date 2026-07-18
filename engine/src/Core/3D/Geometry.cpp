@@ -1,3 +1,4 @@
+#include <cmath>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -21,15 +22,50 @@ glm::mat4 Transform::GetModelMatrix()
 
 glm::mat4 Transform::GetViewProjectionMatrix()
 {
-    SDL_Log("Start Calculating View Projection Matrix");
-    glm::mat4 view = glm::lookAt(position, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 view = glm::lookAt(position, position + forward, glm::vec3(0.0f, 1.0f, 0.0f));
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)g_Context.swapchainTextureSize.width / (float)g_Context.swapchainTextureSize.height, 0.1f, 100.0f);
 
     // converting OpenGL (glm default) axis direction into Vulkan axis direction
     projection[1][1] *= 1;
-    SDL_Log("Camera Position: %f, %f, %f", position.x, position.y, position.z);
 
     return projection * view;
+}
+
+void MonkeyDEngine::Transform::Translate(Vector3 delta)
+{
+    position += delta;
+    CalculateDirection();
+}
+
+void MonkeyDEngine::Transform::Rotate(Vector3 delta)
+{
+    rotation += delta;
+    CalculateDirection();
+}
+
+void MonkeyDEngine::Transform::Scale(Vector3 delta)
+{
+    scale += delta;
+}
+
+void Transform::CalculateDirection()
+{
+    glm::vec3 updatedForward;
+    updatedForward.x = cos(glm::radians(rotation.y)) * cos(glm::radians(rotation.x));
+    updatedForward.y = sin(glm::radians(rotation.x));
+    updatedForward.z = sin(glm::radians(rotation.y)) * cos(glm::radians(rotation.x));
+    forward = glm::normalize(updatedForward);
+    right = glm::normalize(glm::cross(forward, glm::vec3(0.0f, 1.0f, 0.0f)));
+    up = glm::normalize(glm::cross(right, forward));
+}
+
+void Transform::LookAt(Vector3 target)
+{
+    glm::vec3 direction = glm::normalize(target - position);
+
+    rotation.x = glm::degrees(std::asin(direction.y));
+    rotation.y = glm::degrees(std::atan2(direction.z, direction.x));
+    rotation.z = glm::degrees(std::atan2(direction.y, direction.y));
 }
 
 bool Geometry::LoadGLTF(const char *filePath,
@@ -92,8 +128,6 @@ bool Geometry::LoadGLTF(const char *filePath,
         vertex.uv = glm::vec2(uvData[i * 2 + 0], uvData[i * 2 + 1]);
         outVertices.push_back(vertex);
     }
-
-    SDL_Log("First vertex pos: (%f, %f, %f)", outVertices[0].position.x, outVertices[0].position.y, outVertices[0].position.z);
 
     return true;
 }

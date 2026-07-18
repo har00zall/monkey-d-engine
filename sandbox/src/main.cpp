@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
             auto meshToRender = entity->AddComponent<MeshRenderer>();
             meshToRender->SetMesh("assets/monkey_chad.gltf");
             meshToRender->SetTexture("assets/monkey_diffuse.png");
-            meshToRender->transform.position = glm::vec3{startingX + x * 6.f, 0.f, startingZ - z * 6.f};
+            meshToRender->transform.SetPosition({startingX + x * 6.f, 0.f, startingZ - z * 6.f});
 
             mainScene->entities.push_back(entity);
         }
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
             auto meshToRender = entity->AddComponent<MeshRenderer>();
             meshToRender->SetMesh("assets/monkey_chad.gltf");
             meshToRender->SetTexture("assets/monkey_diffuse.png");
-            meshToRender->transform.position = glm::vec3{startingX + x * 6.f, 0.f, startingZ - z * 6.f};
+            meshToRender->transform.SetPosition({startingX + x * 6.f, 0.f, startingZ - z * 6.f});
 
             mainScene->entities.push_back(entity);
         }

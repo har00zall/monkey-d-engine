@@ -105,7 +105,7 @@ void GraphicsSystem::OnStartSystem()
 
 void GraphicsSystem::OnStopSystem()
 {
-    SDL_Log("\t\t\t\t[Starting] Clearing Graphics System");
+    SDL_Log("\t\t\t[Starting] Clearing Graphics System");
 
     if (depthTexture)
         SDL_ReleaseGPUTexture(gpuDevice, depthTexture);
@@ -115,12 +115,11 @@ void GraphicsSystem::OnStopSystem()
 
     // destroy the GPU device
     SDL_DestroyGPUDevice(gpuDevice);
-    SDL_Log("\t\t\t\t[End] Graphics System Clearing Completed");
+    SDL_Log("\t\t\t[End] Graphics System Clearing Completed");
 }
 
 int GraphicsSystem::Render3D()
 {
-    SDL_Log("[Started] Rendering 3D");
     // acquire the command buffer
     gpuCommandBuffer = SDL_AcquireGPUCommandBuffer(gpuDevice);
 
@@ -142,7 +141,6 @@ int GraphicsSystem::Render3D()
     }
 
     // create the color target (now +depth)
-    SDL_Log("[Started] Render Pass Creation");
     SDL_GPUColorTargetInfo colorTargetInfo{};
     colorTargetInfo.clear_color = {186.f / 255.f, 221.f / 255.f, 250.f / 250.f, 1.0f};
     colorTargetInfo.load_op = SDL_GPU_LOADOP_CLEAR;
@@ -160,21 +158,15 @@ int GraphicsSystem::Render3D()
 
     // begin a render pass
     gpuRenderPass.activeRenderPass = SDL_BeginGPURenderPass(gpuCommandBuffer, &colorTargetInfo, 1, &depthTargetInfo);
-    SDL_Log("[End] Render Pass Creation");
 
     // draw calls go here
-    SDL_Log("[Started] Binding Pipeline");
     SDL_BindGPUGraphicsPipeline(gpuRenderPass.activeRenderPass, gpuGraphicsPipeline);
 
-    SDL_Log("[Started] Render Process Mesh");
     for (auto meshToRender : gpuRenderPass.renderers)
         meshToRender->Render();
-    SDL_Log("[End] Render Process Mesh");
 
     SDL_EndGPURenderPass(gpuRenderPass.activeRenderPass); // end the render pass
     SDL_SubmitGPUCommandBuffer(gpuCommandBuffer);
-
-    SDL_Log("[End] Rendered 3D");
 
     return SDL_APP_CONTINUE;
 }
