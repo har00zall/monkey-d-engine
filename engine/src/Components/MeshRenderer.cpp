@@ -3,8 +3,9 @@
 #include <limits>
 #include <SDL3/SDL.h>
 #include "Context.h"
-#include "Core/System/SystemManager.h"
+#include "Core/OS/Time.h"
 #include "Core/3D/Geometry.h"
+#include "Core/System/SystemManager.h"
 #include "Systems/GraphicsSystem.h"
 #include "Components/Camera.h"
 #include "Components/Renderer.h"
@@ -161,7 +162,7 @@ void MeshRenderer::Start()
 
 void MeshRenderer::Update()
 {
-    m_transform.rotation.y += m_randomRotationSpeed * 0.15f;
+    m_transform.rotation.y += m_randomRotationSpeed * Time::deltaTime;
 }
 
 void MeshRenderer::Render()

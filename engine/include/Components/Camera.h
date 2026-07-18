@@ -8,7 +8,7 @@ namespace MonkeyDEngine
     class Camera : public Component
     {
     protected:
-        float orbitAngle = 0.0f, orbitSpeed = 0.015f;
+        float orbitAngle = 0.0f, orbitSpeed = 1.f;
 
     public:
         Camera();

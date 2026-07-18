@@ -13,7 +13,7 @@ layout(location = 0) out vec4 outColor;
 
 void main() {
     // Simple directional light simulation for now
-    float lightIntensity = 1.5;
+    float lightIntensity = 0.98;
     vec3 norm = normalize(v_normal);
     vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
     vec3 viewDir = normalize(viewPosition - v_fragPos);

@@ -1,6 +1,8 @@
 #include <vector>
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_time.h>
 #include <glm/glm.hpp>
+#include "Core/OS/Time.h"
 #include "Core/System/SystemBase.h"
 #include "Core/System/SystemManager.h"
 #include "Systems/SceneSystem.h"
@@ -43,9 +45,17 @@ namespace MonkeyDEngine
             });
         SDL_Log("[End] Systems Registered and Started");
 
-        g_Context.mainCamera = new Camera();
+        // Creating main scene
         auto mainScene = std::make_shared<Scene>();
-        float startingX = -3, startingZ = 3;
+
+        // Adding main camera
+        auto cameraEntity = std::make_shared<Entity>();
+        auto mainCameraComponent = std::make_shared<Camera>();
+        cameraEntity->components.push_back(mainCameraComponent);
+        mainScene->entities.push_back(cameraEntity);
+
+        // Adding monkey objects ( 1 object = 1 draw call)
+        float startingX = -3, startingZ = 0;
         for (Uint16 x = 0; x < 2; x++)
         {
             for (Uint16 z = 0; z < 1; z++)
@@ -53,7 +63,6 @@ namespace MonkeyDEngine
                 auto entity = std::make_shared<Entity>();
                 auto meshToRender = std::make_shared<MeshRenderer>("assets/monkey_chad.gltf", "assets/monkey_diffuse.png");
                 meshToRender->m_transform.position = glm::vec3{startingX + x * 6.f, 0.f, startingZ - z * 6.f};
-                // meshToRender->m_transform.scale = glm::vec3(0.5f);
                 meshToRender->Start();
 
                 entity->components.push_back(meshToRender);
@@ -63,9 +72,14 @@ namespace MonkeyDEngine
         SystemManager::Instance().GetSystem<SceneSystem>()->RegisterScene(mainScene);
 
         bool running = true;
+        Uint64 previousTime = 0;
         SDL_Event event{0};
         while (running)
         {
+            Uint64 nowTime = SDL_GetTicks();
+            Time::ticks = nowTime;
+            Time::deltaTime = (nowTime - previousTime) / 1000.0f;
+
             while (SDL_PollEvent(&event))
             {
                 switch (event.type)
@@ -82,14 +96,13 @@ namespace MonkeyDEngine
             }
 
             // Game Update
-            if (g_Context.mainCamera)
-                g_Context.mainCamera->Update();
-
             SystemManager::Instance().GetSystem<SceneSystem>()->Update();
 
             // Graphics Render
             SystemManager::Instance().GetSystem<GraphicsSystem>()->Render3D();
             // End Rendering
+
+            previousTime = nowTime;
         }
 
         SystemManager::Instance().Dispose();
