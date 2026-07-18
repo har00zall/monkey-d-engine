@@ -1,7 +1,7 @@
 #include <SDL3/SDL.h>
 #include <glm/glm.hpp>
 #include "Context.h"
-#include "Components/Camera.h"
+#include "Camera.h"
 #include "Core/OS/Time.h"
 
 using namespace MonkeyDEngine;

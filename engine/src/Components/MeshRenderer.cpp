@@ -7,9 +7,9 @@
 #include "Core/3D/Geometry.h"
 #include "Core/System/SystemManager.h"
 #include "Systems/GraphicsSystem.h"
-#include "Components/Camera.h"
-#include "Components/Renderer.h"
-#include "Components/MeshRenderer.h"
+#include "Camera.h"
+#include "Renderer.h"
+#include "MeshRenderer.h"
 
 using namespace MonkeyDEngine;
 

@@ -3,7 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "Context.h"
-#include "Core/3D/Geometry.h"
+#include "Geometry.h"
 
 using namespace MonkeyDEngine;
 

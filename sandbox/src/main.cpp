@@ -24,33 +24,13 @@ int main(int argc, char *argv[])
     mainScene->entities.push_back(cameraEntity);
 
     // Adding monkey objects ( 1 object = 1 draw call)
-    float startingX = -3, startingZ = 0;
-    for (Uint16 x = 0; x < 2; x++)
+    float startingX = -12, startingZ = 0;
+    for (Uint16 x = 0; x < 5; x++)
     {
         for (Uint16 z = 0; z < 1; z++)
         {
             auto entity = Entity::Create();
-            auto meshToRender = entity->AddComponent<MeshRenderer>();
-            meshToRender->SetMesh("assets/monkey_chad.gltf");
-            meshToRender->SetTexture("assets/monkey_diffuse.png");
-            meshToRender->transform.SetPosition({startingX + x * 6.f, 0.f, startingZ - z * 6.f});
-
-            mainScene->entities.push_back(entity);
-        }
-    }
-
-    // Added additional sceneepi
-    auto secondScene = std::make_shared<Scene>();
-    // Adding monkey objects ( 1 object = 1 draw call)
-    float secondStartingX = -3, secondStartingZ = 6;
-    for (Uint16 x = 0; x < 2; x++)
-    {
-        for (Uint16 z = 1; z < 2; z++)
-        {
-            auto entity = Entity::Create();
-            auto meshToRender = entity->AddComponent<MeshRenderer>();
-            meshToRender->SetMesh("assets/monkey_chad.gltf");
-            meshToRender->SetTexture("assets/monkey_diffuse.png");
+            auto meshToRender = entity->AddComponent<MeshRenderer>("assets/monkey_chad.gltf", "assets/monkey_diffuse.png");
             meshToRender->transform.SetPosition({startingX + x * 6.f, 0.f, startingZ - z * 6.f});
 
             mainScene->entities.push_back(entity);
@@ -63,11 +43,8 @@ int main(int argc, char *argv[])
         .windowHeight = 720,
         .windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY,
 
-        .scenes = {mainScene, secondScene}};
+        .scenes = {mainScene}};
 
     Engine engine(&initConfig);
-
-    SceneSystem::LoadScene(1, SceneLoadMode::Additive);
-
     return engine.Run();
 }

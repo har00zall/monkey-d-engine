@@ -28,11 +28,11 @@ namespace MonkeyDEngine
             return entity;
         }
 
-        template <typename T>
+        template <typename T, typename... Args>
             requires std::derived_from<T, Component>
-        std::shared_ptr<T> AddComponent()
+        std::shared_ptr<T> AddComponent(Args &&...args)
         {
-            auto newComponent = std::make_shared<T>();
+            auto newComponent = std::make_shared<T>(std::forward<Args>(args)...);
             m_components.push_back(newComponent);
 
             return newComponent;

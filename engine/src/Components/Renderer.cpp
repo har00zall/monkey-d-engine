@@ -3,7 +3,7 @@
 #include <SDL3/SDL.h>
 #include "Core/System/SystemManager.h"
 #include "Systems/GraphicsSystem.h"
-#include "Components/Renderer.h"
+#include "Renderer.h"
 
 using namespace MonkeyDEngine;
 

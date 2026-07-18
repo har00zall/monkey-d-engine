@@ -3,7 +3,7 @@
 #include <typeindex>
 #include <concepts>
 #include "Components/Component.h"
-#include "Systems/SceneSystem.h"
+#include "SceneSystem.h"
 
 using namespace MonkeyDEngine;
 

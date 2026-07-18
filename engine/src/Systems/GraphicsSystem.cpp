@@ -3,7 +3,7 @@
 #include "Context.h"
 #include "Core/3D/Geometry.h"
 #include "Components/Renderer.h"
-#include "Systems/GraphicsSystem.h"
+#include "GraphicsSystem.h"
 
 using namespace MonkeyDEngine;
 

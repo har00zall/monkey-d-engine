@@ -1,5 +1,5 @@
 #include <SDL3/SDL.h>
-#include "Components/Component.h"
+#include "Component.h"
 
 using namespace MonkeyDEngine;
 

@@ -1,5 +1,5 @@
-#include "Core/System/SystemManager.h"
-#include "Core/System/SystemBase.h"
+#include "SystemManager.h"
+#include "SystemBase.h"
 
 namespace MonkeyDEngine
 {
