@@ -21,8 +21,6 @@ namespace MonkeyDEngine
 
     Engine::~Engine()
     {
-        SystemManager::Instance().Dispose();
-
         SDL_DestroyWindow(g_Context.window);
         SDL_Quit();
 
@@ -55,7 +53,7 @@ namespace MonkeyDEngine
         SDL_Log("[Starting] Register and Start Systems");
         SystemManager::Instance()
             .RegisterSystems({
-                {.autoStart = false, .type = typeid(SceneSystem), .instance = std::make_shared<SceneSystem>()},
+                {.autoStart = false, .type = typeid(SceneSystem), .instance = std::make_shared<SceneSystem>()}, // make sure you SceneSystem is registered first
                 {.autoStart = true, .type = typeid(GraphicsSystem), .instance = std::make_shared<GraphicsSystem>()},
             });
         SDL_Log("[End] Systems Registered and Started");
@@ -64,7 +62,7 @@ namespace MonkeyDEngine
         {
             for (auto &scene : initData->scenes)
             {
-                SystemManager::Instance().GetSystem<SceneSystem>()->RegisterScene(scene);
+                SceneSystem::RegisterScene(scene);
             }
         }
 
@@ -109,6 +107,10 @@ namespace MonkeyDEngine
 
             previousTime = nowTime;
         }
+
+        // Dispose all system from 0 index to end()
+        // so make sure you SceneSystem is registered first
+        SystemManager::Instance().Dispose();
 
         return SDL_APP_CONTINUE;
     }

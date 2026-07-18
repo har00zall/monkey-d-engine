@@ -23,6 +23,17 @@ namespace MonkeyDEngine
     {
         SDL_GPURenderPass *activeRenderPass;
         std::vector<Renderer *> renderers;
+
+        void AddRenderer(Renderer *newRenderer)
+        {
+            renderers.push_back(newRenderer);
+        }
+        void RemoveRenderer(Renderer *renderer)
+        {
+            renderers.erase(
+                std::remove(renderers.begin(), renderers.end(), renderer),
+                renderers.end());
+        }
     };
 
     class GraphicsSystem : public SystemBase

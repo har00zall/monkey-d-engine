@@ -38,15 +38,34 @@ int main(int argc, char *argv[])
         }
     }
 
+    auto secondScene = std::make_shared<Scene>();
+
+    // Adding monkey objects ( 1 object = 1 draw call)
+    float secondStartingX = -3, secondStartingZ = 6;
+    for (Uint16 x = 0; x < 2; x++)
+    {
+        for (Uint16 z = 1; z < 2; z++)
+        {
+            auto entity = std::make_shared<Entity>();
+            auto meshToRender = std::make_shared<MeshRenderer>("assets/monkey_chad.gltf", "assets/monkey_diffuse.png");
+            meshToRender->m_transform.position = glm::vec3{startingX + x * 6.f, 0.f, startingZ - z * 6.f};
+
+            entity->components.push_back(meshToRender);
+            secondScene->entities.push_back(entity);
+        }
+    }
+
     EngineInitData initConfig{
         .title = "Sandbox",
         .windowWidth = 1280,
         .windowHeight = 720,
         .windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY,
 
-        .scenes = {mainScene}};
+        .scenes = {mainScene, secondScene}};
 
     Engine engine(&initConfig);
+
+    SceneSystem::LoadScene(1, SceneLoadMode::Additive);
 
     return engine.Run();
 }

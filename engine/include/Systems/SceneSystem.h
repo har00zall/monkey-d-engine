@@ -22,19 +22,30 @@ namespace MonkeyDEngine
     {
         std::vector<std::shared_ptr<Entity>> entities;
 
+        void Activate();
         void Update();
+        void Dispose();
     };
+
+    typedef enum SceneLoadMode
+    {
+        Single,
+        Additive
+    } SceneLoadMode;
 
     class SceneSystem : public SystemBase
     {
     public:
-        void RegisterScene(std::shared_ptr<Scene> sceneToRegister);
+        static void RegisterScene(std::shared_ptr<Scene> sceneToRegister);
+        static void LoadScene(int sceneIndex, SceneLoadMode loadMode);
+        static void UnloadScene(int sceneIndex);
 
         void Update();
 
     protected:
-        std::shared_ptr<Scene> m_activeScene;
-        std::vector<std::shared_ptr<Scene>> m_scenes;
+        inline static std::shared_ptr<Scene> m_activeScene;
+        inline static std::vector<std::shared_ptr<Scene>> m_loadedScenes;
+        inline static std::vector<std::shared_ptr<Scene>> m_scenes;
 
         void OnStartSystem() override;
         void OnStopSystem() override;
