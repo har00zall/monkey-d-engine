@@ -7,11 +7,6 @@ using namespace MonkeyDEngine;
 void SceneSystem::RegisterScene(std::shared_ptr<Scene> sceneToRegister)
 {
     m_scenes.push_back(sceneToRegister);
-
-    if (!m_activeScene)
-    {
-        m_activeScene = std::move(sceneToRegister);
-    }
 }
 
 void SceneSystem::Update()
@@ -24,10 +19,21 @@ void SceneSystem::Update()
 
 void SceneSystem::OnStartSystem()
 {
-    // if (!m_activeScene)
-    // {
-    //     m_activeScene = m_scenes[0];
-    // }
+    if (m_scenes.empty())
+        return;
+
+    if (!m_activeScene)
+    {
+        m_activeScene = m_scenes[0];
+    }
+
+    if (m_activeScene)
+    {
+        for (auto &entityInActiveScene : m_activeScene->entities)
+        {
+            entityInActiveScene->Start();
+        }
+    }
 }
 
 void SceneSystem::OnStopSystem()
