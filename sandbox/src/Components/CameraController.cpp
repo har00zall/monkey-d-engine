@@ -7,12 +7,10 @@ using namespace MonkeyDEngine;
 
 void CameraController::Start()
 {
-    SDL_Log("Called Camera Controller. Start");
-    SDL_CaptureMouse(false);
+    SDL_SetWindowMouseGrab(g_Context.window, true);
 
     g_Context.mainCamera->transform.SetPosition({0.0f, 20, -25.0f});
     g_Context.mainCamera->transform.LookAt({0.f, 0.f, 0.f});
-    // g_Context.mainCamera->transform.SetRotation({0.0f, -90, 8.0f});
 }
 
 void CameraController::Update()
