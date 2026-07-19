@@ -1,8 +1,8 @@
 #include <SDL3/SDL.h>
-#include "Components/Camera.h"
 
 namespace MonkeyDEngine
 {
+    class Camera;
     struct Size
     {
         Uint32 width;
@@ -12,6 +12,8 @@ namespace MonkeyDEngine
     struct Context
     {
         SDL_Window *window;
+        SDL_GPUDevice *gpuDevice;
+
         Camera *mainCamera;
 
         Size swapchainTextureSize{};

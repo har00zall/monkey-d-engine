@@ -5,6 +5,7 @@
 #include <SDL3/SDL.h>
 #include "Components/Renderer.h"
 #include "Core/3D/Geometry.h"
+#include "Core/3D/Material.h"
 
 namespace MonkeyDEngine
 {
@@ -13,10 +14,8 @@ namespace MonkeyDEngine
     {
     protected:
         std::string m_meshFilePath;
-        std::string m_textureFilePath;
         Mesh m_mesh;
-        SDL_GPUTexture *m_texture;
-        SDL_GPUSampler *m_textureSampler;
+        std::shared_ptr<Material> m_material;
 
         float m_randomRotationSpeed;
 
@@ -25,13 +24,12 @@ namespace MonkeyDEngine
     public:
         MeshRenderer() = default;
         MeshRenderer(const char *meshPath);
-        MeshRenderer(const char *meshPath, const char *texturePath);
         MeshRenderer(Mesh mesh) { m_mesh = mesh; }
 
         virtual ~MeshRenderer() = default;
 
         inline void SetMesh(const char *meshPath) { m_meshFilePath = meshPath; }
-        inline void SetTexture(const char *texturePath) { m_textureFilePath = texturePath; }
+        inline void SetMaterial(std::shared_ptr<Material> material) { m_material = material; }
 
         void Start() override;
         void Update() override;

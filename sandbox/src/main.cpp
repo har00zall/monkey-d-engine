@@ -7,6 +7,7 @@
 #include <SDL3/SDL_main.h>
 #include "Engine.h"
 #include "Core/3D/Geometry.h"
+#include "Core/3D/Material.h"
 #include "Components/Camera.h"
 #include "Components/CameraController.h"
 #include "Components/MeshRenderer.h"
@@ -30,7 +31,10 @@ int main(int argc, char *argv[])
         for (Uint16 z = 0; z < 1; z++)
         {
             auto entity = Entity::Create();
-            auto meshToRender = entity->AddComponent<MeshRenderer>("assets/monkey_chad.gltf", "assets/monkey_diffuse.png");
+            auto meshToRender = entity->AddComponent<MeshRenderer>("assets/monkey_chad.gltf");
+
+            auto meshMaterial = std::make_shared<Material>("shaders/base.vert.spv", "shaders/base.frag.spv", "assets/monkey_diffuse.png");
+            meshToRender->SetMaterial(meshMaterial);
             meshToRender->transform.SetPosition({startingX + x * 6.f, 0.f, startingZ - z * 6.f});
 
             mainScene->entities.push_back(entity);

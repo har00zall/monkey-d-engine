@@ -1,13 +1,14 @@
 #include "Context.h"
 #include "Core/OS/Time.h"
 #include "Core/3D/Geometry.h"
+#include "Components/Camera.h"
 #include "Components/CameraController.h"
 
 using namespace MonkeyDEngine;
 
 void CameraController::Start()
 {
-    SDL_SetWindowMouseGrab(g_Context.window, true);
+    SDL_SetWindowMouseGrab(g_Context.window, false);
 
     g_Context.mainCamera->transform.SetPosition({0.0f, 20, -25.0f});
     g_Context.mainCamera->transform.LookAt({0.f, 0.f, 0.f});

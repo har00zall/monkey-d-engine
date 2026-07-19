@@ -41,10 +41,8 @@ namespace MonkeyDEngine
     public:
         ~GraphicsSystem() = default;
 
-        SDL_GPUDevice *gpuDevice;
         SDL_GPUTexture *depthTexture; // z-buffer
 
-        SDL_GPUGraphicsPipeline *gpuGraphicsPipeline;
         SDL_GPUCommandBuffer *gpuCommandBuffer;
         RenderPassData gpuRenderPass{};
 
@@ -54,14 +52,5 @@ namespace MonkeyDEngine
     protected:
         void OnStartSystem() override;
         void OnStopSystem() override;
-
-        SDL_GPUShader *CreateShader(
-            const char *shaderFilePath,
-            SDL_GPUShaderFormat shaderFormat,
-            SDL_GPUShaderStage shaderStage,
-            Uint32 num_sampler = 0,
-            Uint32 num_storage_buffers = 0,
-            Uint32 num_storage_textures = 0,
-            Uint32 num_uniform_buffers = 0);
     };
 }

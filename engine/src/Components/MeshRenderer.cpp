@@ -5,6 +5,7 @@
 #include "Context.h"
 #include "Core/OS/Time.h"
 #include "Core/3D/Geometry.h"
+#include "Core/3D/Material.h"
 #include "Core/System/SystemManager.h"
 #include "Systems/GraphicsSystem.h"
 #include "Camera.h"
@@ -16,12 +17,6 @@ using namespace MonkeyDEngine;
 MeshRenderer::MeshRenderer(const char *meshPath)
 {
     m_meshFilePath = meshPath;
-}
-
-MeshRenderer::MeshRenderer(const char *meshPath, const char *texturePath)
-{
-    m_meshFilePath = meshPath;
-    m_textureFilePath = texturePath;
 }
 
 void MeshRenderer::Start()
@@ -38,75 +33,34 @@ void MeshRenderer::Start()
 
     // load geometry
     LoadMesh(m_meshFilePath.c_str(), m_mesh);
-    gpuVertexBuffer = SDL_CreateGPUBuffer(graphicsSystem->gpuDevice, &gpuVertexBufferInfo);
-    gpuIndexBuffer = SDL_CreateGPUBuffer(graphicsSystem->gpuDevice, &gpuIndexBufferInfo);
-
-    // Load texture
-    SDL_Surface *surface = SDL_LoadPNG(m_textureFilePath.c_str());
-    SDL_Surface *rgbaSurface = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
-    SDL_DestroySurface(surface);
-
-    // create texture
-    SDL_GPUTextureCreateInfo textureInfo{};
-    textureInfo.width = rgbaSurface->w;
-    textureInfo.height = rgbaSurface->h;
-    textureInfo.type = SDL_GPU_TEXTURETYPE_2D;
-    textureInfo.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
-    textureInfo.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
-    textureInfo.layer_count_or_depth = 1;
-    textureInfo.num_levels = 1;
-    m_texture = SDL_CreateGPUTexture(graphicsSystem->gpuDevice, &textureInfo);
-    Uint32 textureSize = rgbaSurface->pitch * rgbaSurface->h;
-
-    // create sampler
-    SDL_GPUSamplerCreateInfo samplerInfo{};
-    samplerInfo.min_filter = SDL_GPU_FILTER_LINEAR;
-    samplerInfo.mag_filter = SDL_GPU_FILTER_LINEAR;
-    samplerInfo.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_LINEAR;
-    samplerInfo.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_REPEAT;
-    samplerInfo.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_REPEAT;
-    m_textureSampler = SDL_CreateGPUSampler(graphicsSystem->gpuDevice, &samplerInfo);
+    gpuVertexBuffer = SDL_CreateGPUBuffer(g_Context.gpuDevice, &gpuVertexBufferInfo);
+    gpuIndexBuffer = SDL_CreateGPUBuffer(g_Context.gpuDevice, &gpuIndexBufferInfo);
 
     // create uniform buffer
     gpuVertexUniformBufferInfo.size = sizeof(VertexUniformBufferObject);
     gpuVertexUniformBufferInfo.usage = SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ;
-    gpuVertexUniformBuffer = SDL_CreateGPUBuffer(graphicsSystem->gpuDevice, &gpuVertexUniformBufferInfo);
+    gpuVertexUniformBuffer = SDL_CreateGPUBuffer(g_Context.gpuDevice, &gpuVertexUniformBufferInfo);
 
     // create a transfer buffer to upload to the vertex buffer
     SDL_GPUTransferBufferCreateInfo transferInfo{};
-    transferInfo.size = (Uint32)(gpuVertexBufferInfo.size + gpuIndexBufferInfo.size + textureSize);
+    transferInfo.size = (Uint32)(gpuVertexBufferInfo.size + gpuIndexBufferInfo.size);
     transferInfo.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
-    SDL_GPUTransferBuffer *gpuTransferBuffer = SDL_CreateGPUTransferBuffer(graphicsSystem->gpuDevice, &transferInfo);
+    SDL_GPUTransferBuffer *gpuTransferBuffer = SDL_CreateGPUTransferBuffer(g_Context.gpuDevice, &transferInfo);
 
     // fill the transfer buffer
-    Uint8 *mapped = (Uint8 *)SDL_MapGPUTransferBuffer(graphicsSystem->gpuDevice, gpuTransferBuffer, false);
+    Uint8 *mapped = (Uint8 *)SDL_MapGPUTransferBuffer(g_Context.gpuDevice, gpuTransferBuffer, false);
 
-    SDL_memcpy(mapped, rgbaSurface->pixels, textureSize);
-    SDL_memcpy(mapped + textureSize, m_mesh.vertices.data(), gpuVertexBufferInfo.size);
-    SDL_memcpy(mapped + textureSize + gpuVertexBufferInfo.size, m_mesh.indices.data(), gpuIndexBufferInfo.size);
-    SDL_UnmapGPUTransferBuffer(graphicsSystem->gpuDevice, gpuTransferBuffer);
+    SDL_memcpy(mapped, m_mesh.vertices.data(), gpuVertexBufferInfo.size);
+    SDL_memcpy(mapped + gpuVertexBufferInfo.size, m_mesh.indices.data(), gpuIndexBufferInfo.size);
+    SDL_UnmapGPUTransferBuffer(g_Context.gpuDevice, gpuTransferBuffer);
 
     // start a copy pass
-    SDL_GPUCommandBuffer *commandBuffer = SDL_AcquireGPUCommandBuffer(graphicsSystem->gpuDevice);
+    SDL_GPUCommandBuffer *commandBuffer = SDL_AcquireGPUCommandBuffer(g_Context.gpuDevice);
     SDL_GPUCopyPass *copyPass = SDL_BeginGPUCopyPass(commandBuffer);
-
-    // data for texture
-    SDL_GPUTextureTransferInfo textureTransferInfo{};
-    textureTransferInfo.offset = 0;
-    textureTransferInfo.transfer_buffer = gpuTransferBuffer;
-
-    SDL_GPUTextureRegion textureTransferRegion{};
-    textureTransferRegion.texture = m_texture;
-    textureTransferRegion.w = rgbaSurface->w;
-    textureTransferRegion.h = rgbaSurface->h;
-    textureTransferRegion.d = 1;
-
-    // 3. upload texture
-    SDL_UploadToGPUTexture(copyPass, &textureTransferInfo, &textureTransferRegion, false);
 
     // where is the data
     SDL_GPUTransferBufferLocation location{};
-    location.offset = textureSize;
+    location.offset = 0;
     location.transfer_buffer = gpuTransferBuffer;
 
     // where to upload the data
@@ -119,7 +73,7 @@ void MeshRenderer::Start()
     SDL_UploadToGPUBuffer(copyPass, &location, &region, false);
 
     // update the data for index buffer
-    location.offset = textureSize + gpuVertexBufferInfo.size;
+    location.offset = gpuVertexBufferInfo.size;
     region.buffer = gpuIndexBuffer;
     region.size = gpuIndexBufferInfo.size;
 
@@ -129,10 +83,10 @@ void MeshRenderer::Start()
     // end the copy pass
     SDL_EndGPUCopyPass(copyPass);
     SDL_SubmitGPUCommandBuffer(commandBuffer);
-    SDL_ReleaseGPUTransferBuffer(graphicsSystem->gpuDevice, gpuTransferBuffer);
+    SDL_ReleaseGPUTransferBuffer(g_Context.gpuDevice, gpuTransferBuffer);
 
-    // Clean up RAM resources
-    SDL_DestroySurface(rgbaSurface);
+    // Setup material
+    m_material->Setup();
 
     std::random_device rd;
 
@@ -171,6 +125,8 @@ void MeshRenderer::Render()
         SDL_Log("Camera on Graphics System is Missing");
         return;
     }
+    // binding gpu pipeline
+    m_material->Bind(graphicsSystem->gpuRenderPass.activeRenderPass);
 
     // binding vertex buffer
     SDL_GPUBufferBinding vertexBufferBindings[1];
@@ -183,11 +139,6 @@ void MeshRenderer::Render()
     indexBufferBindings.buffer = gpuIndexBuffer;
     indexBufferBindings.offset = 0;
     SDL_BindGPUIndexBuffer(graphicsSystem->gpuRenderPass.activeRenderPass, &indexBufferBindings, SDL_GPU_INDEXELEMENTSIZE_32BIT);
-
-    SDL_GPUTextureSamplerBinding textureBindingInfo{};
-    textureBindingInfo.sampler = m_textureSampler;
-    textureBindingInfo.texture = m_texture;
-    SDL_BindGPUFragmentSamplers(graphicsSystem->gpuRenderPass.activeRenderPass, 0, &textureBindingInfo, 1);
 
     FragmentUniformBufferData fragmentUniformBufferData{};
     fragmentUniformBufferData.viewPosition = g_Context.mainCamera->transform.GetPosition();
@@ -206,8 +157,7 @@ void MeshRenderer::OnDestroy()
     // release buffers
     Renderer::OnDestroy();
 
-    SDL_ReleaseGPUSampler(graphicsSystem->gpuDevice, m_textureSampler);
-    SDL_ReleaseGPUTexture(graphicsSystem->gpuDevice, m_texture);
+    m_material.reset();
 }
 
 void MeshRenderer::LoadMesh(const char *filePath, Mesh &outMesh)

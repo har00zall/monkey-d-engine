@@ -18,84 +18,11 @@ void GraphicsSystem::OnStartSystem()
     SDL_Log("\t\t\t\t[Starting] Initializing Graphics System");
 
     // create GPU device
-    gpuDevice = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, true, NULL);
-    SDL_ClaimWindowForGPUDevice(gpuDevice, g_Context.window);
-
-    SDL_GPUShader *vertexShader = CreateShader("shaders/base.vert.spv", SDL_GPU_SHADERFORMAT_SPIRV, SDL_GPU_SHADERSTAGE_VERTEX, 0, 0, 0, 1);
-    SDL_GPUShader *fragmentShader = CreateShader("shaders/base.frag.spv", SDL_GPU_SHADERFORMAT_SPIRV, SDL_GPU_SHADERSTAGE_FRAGMENT, 1, 0, 0, 1);
+    g_Context.gpuDevice = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, true, NULL);
+    SDL_ClaimWindowForGPUDevice(g_Context.gpuDevice, g_Context.window);
 
     // create depth texture
     CreateDepthTexture();
-
-    // describe the vertex buffers
-    SDL_GPUVertexBufferDescription vertexBufferDesctiptions[1];
-    vertexBufferDesctiptions[0].slot = 0;
-    vertexBufferDesctiptions[0].input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;
-    vertexBufferDesctiptions[0].instance_step_rate = 0;
-    vertexBufferDesctiptions[0].pitch = sizeof(Vertex);
-
-    // describe the vertex attribute
-    SDL_GPUVertexAttribute vertexAttributes[3];
-    // inPosition
-    vertexAttributes[0].buffer_slot = 0;
-    vertexAttributes[0].location = 0;
-    vertexAttributes[0].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3;
-    vertexAttributes[0].offset = 0;
-    // inNormal
-    vertexAttributes[1].buffer_slot = 0;
-    vertexAttributes[1].location = 1;
-    vertexAttributes[1].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3;
-    vertexAttributes[1].offset = sizeof(float) * 3;
-    // in UV
-    vertexAttributes[2].buffer_slot = 0;
-    vertexAttributes[2].location = 2;
-    vertexAttributes[2].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2;
-    vertexAttributes[2].offset = sizeof(float) * 6;
-
-    // describe the color target
-    SDL_GPUColorTargetDescription colorTargetDescriptions[1];
-    colorTargetDescriptions[0] = {};
-    colorTargetDescriptions[0].blend_state.enable_blend = true;
-    colorTargetDescriptions[0].blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
-    colorTargetDescriptions[0].blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
-    colorTargetDescriptions[0].blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
-    colorTargetDescriptions[0].blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
-    colorTargetDescriptions[0].blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
-    colorTargetDescriptions[0].blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
-    colorTargetDescriptions[0].format = SDL_GetGPUSwapchainTextureFormat(gpuDevice, g_Context.window);
-
-    // create the graphics pipeline
-    SDL_GPUGraphicsPipelineCreateInfo pipelineInfo{};
-    pipelineInfo.vertex_shader = vertexShader;
-    pipelineInfo.fragment_shader = fragmentShader;
-    pipelineInfo.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
-    pipelineInfo.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_FRONT;
-    pipelineInfo.rasterizer_state.front_face = SDL_GPU_FRONTFACE_CLOCKWISE;
-    pipelineInfo.depth_stencil_state.enable_depth_test = true;
-    pipelineInfo.depth_stencil_state.enable_depth_write = true;
-    pipelineInfo.depth_stencil_state.compare_op = SDL_GPU_COMPAREOP_LESS;
-    pipelineInfo.target_info.depth_stencil_format = SDL_GPU_TEXTUREFORMAT_D32_FLOAT;
-    pipelineInfo.target_info.has_depth_stencil_target = true;
-    pipelineInfo.vertex_input_state.num_vertex_buffers = 1;
-    pipelineInfo.vertex_input_state.vertex_buffer_descriptions = vertexBufferDesctiptions;
-    pipelineInfo.vertex_input_state.num_vertex_attributes = 3;
-    pipelineInfo.vertex_input_state.vertex_attributes = vertexAttributes;
-    pipelineInfo.target_info.num_color_targets = 1;
-    pipelineInfo.target_info.color_target_descriptions = colorTargetDescriptions;
-
-    try
-    {
-        // create the pipeline
-        gpuGraphicsPipeline = SDL_CreateGPUGraphicsPipeline(gpuDevice, &pipelineInfo);
-    }
-    catch (const std::exception e)
-    {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to create graphics pipeline: %s", SDL_GetError());
-    }
-
-    // we don't need to store the shaders after creating the pipeline
-    SDL_ReleaseGPUShader(gpuDevice, vertexShader);
-    SDL_ReleaseGPUShader(gpuDevice, fragmentShader);
 
     SDL_Log("\t\t\t\t[End] Graphics System Initialization Complete");
 
@@ -108,20 +35,17 @@ void GraphicsSystem::OnStopSystem()
     SDL_Log("\t\t\t[Starting] Clearing Graphics System");
 
     if (depthTexture)
-        SDL_ReleaseGPUTexture(gpuDevice, depthTexture);
-
-    // release the pipeline
-    SDL_ReleaseGPUGraphicsPipeline(gpuDevice, gpuGraphicsPipeline);
+        SDL_ReleaseGPUTexture(g_Context.gpuDevice, depthTexture);
 
     // destroy the GPU device
-    SDL_DestroyGPUDevice(gpuDevice);
+    SDL_DestroyGPUDevice(g_Context.gpuDevice);
     SDL_Log("\t\t\t[End] Graphics System Clearing Completed");
 }
 
 int GraphicsSystem::Render3D()
 {
     // acquire the command buffer
-    gpuCommandBuffer = SDL_AcquireGPUCommandBuffer(gpuDevice);
+    gpuCommandBuffer = SDL_AcquireGPUCommandBuffer(g_Context.gpuDevice);
 
     // get the swapchain texture
     SDL_GPUTexture *swapchainTexture;
@@ -160,8 +84,6 @@ int GraphicsSystem::Render3D()
     gpuRenderPass.activeRenderPass = SDL_BeginGPURenderPass(gpuCommandBuffer, &colorTargetInfo, 1, &depthTargetInfo);
 
     // draw calls go here
-    SDL_BindGPUGraphicsPipeline(gpuRenderPass.activeRenderPass, gpuGraphicsPipeline);
-
     for (auto meshToRender : gpuRenderPass.renderers)
         meshToRender->Render();
 
@@ -175,7 +97,7 @@ void GraphicsSystem::CreateDepthTexture()
 {
     if (depthTexture)
     {
-        SDL_ReleaseGPUTexture(gpuDevice, depthTexture);
+        SDL_ReleaseGPUTexture(g_Context.gpuDevice, depthTexture);
         depthTexture = nullptr;
     }
 
@@ -190,44 +112,5 @@ void GraphicsSystem::CreateDepthTexture()
     depthTextureCreateInfo.layer_count_or_depth = 1;
     depthTextureCreateInfo.num_levels = 1;
     depthTextureCreateInfo.usage = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
-    depthTexture = SDL_CreateGPUTexture(gpuDevice, &depthTextureCreateInfo);
-}
-
-SDL_GPUShader *GraphicsSystem::CreateShader(
-    const char *shaderFilePath,
-    SDL_GPUShaderFormat shaderFormat,
-    SDL_GPUShaderStage shaderStage,
-    Uint32 num_sampler,
-    Uint32 num_storage_buffers,
-    Uint32 num_storage_textures,
-    Uint32 num_uniform_buffers)
-{
-    size_t shaderCodeSize;
-    void *shaderCode = SDL_LoadFile(shaderFilePath, &shaderCodeSize);
-    if (!shaderCode)
-    {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Load Shader Error: %s", SDL_GetError());
-    }
-
-    SDL_GPUShaderCreateInfo shaderCreateInfo{};
-    shaderCreateInfo.code = (Uint8 *)shaderCode;
-    shaderCreateInfo.code_size = shaderCodeSize;
-    shaderCreateInfo.entrypoint = "main";
-    shaderCreateInfo.format = shaderFormat;
-    shaderCreateInfo.num_samplers = num_sampler;
-    shaderCreateInfo.num_storage_buffers = num_storage_buffers;
-    shaderCreateInfo.num_storage_textures = num_storage_textures;
-    shaderCreateInfo.num_uniform_buffers = num_uniform_buffers;
-    shaderCreateInfo.stage = shaderStage;
-
-    SDL_GPUShader *shader = SDL_CreateGPUShader(gpuDevice, &shaderCreateInfo);
-
-    if (!shader)
-    {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Creating Shader Error: %s", SDL_GetError());
-    }
-
-    SDL_free(shaderCode);
-
-    return shader;
+    depthTexture = SDL_CreateGPUTexture(g_Context.gpuDevice, &depthTextureCreateInfo);
 }
