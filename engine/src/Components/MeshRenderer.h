@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 #include <SDL3/SDL.h>
 #include "Components/Renderer.h"
 #include "Core/3D/Geometry.h"
@@ -9,12 +10,23 @@
 
 namespace MonkeyDEngine
 {
-    class GraphicsSystem;
+    struct MeshBufferData
+    {
+        Mesh mesh;
+        SDL_GPUBufferCreateInfo gpuVertexBufferInfo{};
+        SDL_GPUBuffer *gpuVertexBuffer;
+        SDL_GPUBufferCreateInfo gpuIndexBufferInfo{};
+        SDL_GPUBuffer *gpuIndexBuffer;
+        SDL_GPUBufferCreateInfo gpuVertexUniformBufferInfo{};
+        SDL_GPUBuffer *gpuVertexUniformBuffer;
+
+        std::vector<Renderer *> renderers;
+    };
+
     class MeshRenderer : public Renderer
     {
     protected:
         std::string m_meshFilePath;
-        Mesh m_mesh;
         std::shared_ptr<Material> m_material;
 
         float m_randomRotationSpeed;
@@ -22,9 +34,10 @@ namespace MonkeyDEngine
         void LoadMesh(const char *filePath, Mesh &outMesh);
 
     public:
+        inline static std::unordered_map<std::string, MeshBufferData *> m_meshBufferDataMap;
+
         MeshRenderer() = default;
         MeshRenderer(const char *meshPath);
-        MeshRenderer(Mesh mesh) { m_mesh = mesh; }
 
         virtual ~MeshRenderer() = default;
 
@@ -33,7 +46,7 @@ namespace MonkeyDEngine
 
         void Start() override;
         void Update() override;
-        void Render() override;
+        void Render(RenderContext &renderContext) override;
         void OnDestroy() override;
     };
 };

@@ -1,6 +1,7 @@
 
 #include <random>
 #include <limits>
+#include <unordered_map>
 #include <SDL3/SDL.h>
 #include "Context.h"
 #include "Core/OS/Time.h"
@@ -23,35 +24,70 @@ void MeshRenderer::Start()
 {
     Renderer::Start();
 
+    MeshBufferData *meshBufferData = nullptr;
+    auto it = m_meshBufferDataMap.find(m_meshFilePath.c_str());
+    if (it == m_meshBufferDataMap.end()) // creating new mesh instance
+    {
+        meshBufferData = new MeshBufferData();
+
+        SDL_Log("Creating new Mesh Instance");
+        // load geometry
+        LoadMesh(m_meshFilePath.c_str(), meshBufferData->mesh);
+
+        // create the vertex buffer
+        meshBufferData->gpuVertexBufferInfo.size = 0;
+        meshBufferData->gpuVertexBufferInfo.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
+
+        // create the index buffer
+        meshBufferData->gpuIndexBufferInfo.size = 0;
+        meshBufferData->gpuIndexBufferInfo.usage = SDL_GPU_BUFFERUSAGE_INDEX;
+
+        m_meshBufferDataMap[m_meshFilePath.c_str()] = meshBufferData;
+    }
+    else
+    {
+        SDL_Log("Found mesh instance");
+        meshBufferData = it->second;
+
+        if (meshBufferData->gpuVertexBuffer)
+            SDL_ReleaseGPUBuffer(g_Context.gpuDevice, meshBufferData->gpuVertexBuffer);
+        if (meshBufferData->gpuIndexBuffer)
+            SDL_ReleaseGPUBuffer(g_Context.gpuDevice, meshBufferData->gpuIndexBuffer);
+        if (meshBufferData->gpuVertexUniformBuffer)
+            SDL_ReleaseGPUBuffer(g_Context.gpuDevice, meshBufferData->gpuVertexUniformBuffer);
+    }
+
+    meshBufferData->renderers.push_back(this);
+
+    SDL_Log("Found mesh instance, Updating Buffer");
     // create the vertex buffer
-    gpuVertexBufferInfo.size = 0;
-    gpuVertexBufferInfo.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
+    meshBufferData->gpuVertexBufferInfo.size = (Uint32)(meshBufferData->mesh.vertices.size() * sizeof(Vertex));
+    meshBufferData->gpuVertexBuffer = SDL_CreateGPUBuffer(g_Context.gpuDevice, &meshBufferData->gpuVertexBufferInfo);
 
     // create the index buffer
-    gpuIndexBufferInfo.size = 0;
-    gpuIndexBufferInfo.usage = SDL_GPU_BUFFERUSAGE_INDEX;
-
-    // load geometry
-    LoadMesh(m_meshFilePath.c_str(), m_mesh);
-    gpuVertexBuffer = SDL_CreateGPUBuffer(g_Context.gpuDevice, &gpuVertexBufferInfo);
-    gpuIndexBuffer = SDL_CreateGPUBuffer(g_Context.gpuDevice, &gpuIndexBufferInfo);
+    meshBufferData->gpuIndexBufferInfo.size = (Uint32)(meshBufferData->mesh.indices.size() * sizeof(Uint32));
+    meshBufferData->gpuIndexBuffer = SDL_CreateGPUBuffer(g_Context.gpuDevice, &meshBufferData->gpuIndexBufferInfo);
 
     // create uniform buffer
-    gpuVertexUniformBufferInfo.size = sizeof(VertexUniformBufferObject);
-    gpuVertexUniformBufferInfo.usage = SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ;
-    gpuVertexUniformBuffer = SDL_CreateGPUBuffer(g_Context.gpuDevice, &gpuVertexUniformBufferInfo);
+    meshBufferData->gpuVertexUniformBufferInfo.size = sizeof(VertexUniformBufferObject);
+    meshBufferData->gpuVertexUniformBufferInfo.usage = SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ;
+    meshBufferData->gpuVertexUniformBuffer = SDL_CreateGPUBuffer(g_Context.gpuDevice, &meshBufferData->gpuVertexUniformBufferInfo);
+
+    SDL_Log("Creating Transfer Buffers");
 
     // create a transfer buffer to upload to the vertex buffer
     SDL_GPUTransferBufferCreateInfo transferInfo{};
-    transferInfo.size = (Uint32)(gpuVertexBufferInfo.size + gpuIndexBufferInfo.size);
+    transferInfo.size = (Uint32)(meshBufferData->gpuVertexBufferInfo.size + meshBufferData->gpuIndexBufferInfo.size);
     transferInfo.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+    SDL_Log("Transfer Buffer Size: %d", transferInfo.size);
     SDL_GPUTransferBuffer *gpuTransferBuffer = SDL_CreateGPUTransferBuffer(g_Context.gpuDevice, &transferInfo);
 
+    SDL_Log("Mapping Transfer Data");
     // fill the transfer buffer
     Uint8 *mapped = (Uint8 *)SDL_MapGPUTransferBuffer(g_Context.gpuDevice, gpuTransferBuffer, false);
 
-    SDL_memcpy(mapped, m_mesh.vertices.data(), gpuVertexBufferInfo.size);
-    SDL_memcpy(mapped + gpuVertexBufferInfo.size, m_mesh.indices.data(), gpuIndexBufferInfo.size);
+    SDL_memcpy(mapped, meshBufferData->mesh.vertices.data(), meshBufferData->gpuVertexBufferInfo.size);
+    SDL_memcpy(mapped + meshBufferData->gpuVertexBufferInfo.size, meshBufferData->mesh.indices.data(), meshBufferData->gpuIndexBufferInfo.size);
     SDL_UnmapGPUTransferBuffer(g_Context.gpuDevice, gpuTransferBuffer);
 
     // start a copy pass
@@ -65,17 +101,17 @@ void MeshRenderer::Start()
 
     // where to upload the data
     SDL_GPUBufferRegion region{};
-    region.buffer = gpuVertexBuffer;
-    region.size = gpuVertexBufferInfo.size;
+    region.buffer = meshBufferData->gpuVertexBuffer;
+    region.size = meshBufferData->gpuVertexBufferInfo.size;
     region.offset = 0;
 
     // 1. upload the vertex data
     SDL_UploadToGPUBuffer(copyPass, &location, &region, false);
 
     // update the data for index buffer
-    location.offset = gpuVertexBufferInfo.size;
-    region.buffer = gpuIndexBuffer;
-    region.size = gpuIndexBufferInfo.size;
+    location.offset = meshBufferData->gpuVertexBufferInfo.size;
+    region.buffer = meshBufferData->gpuIndexBuffer;
+    region.size = meshBufferData->gpuIndexBufferInfo.size;
 
     // 2. upload the index data
     SDL_UploadToGPUBuffer(copyPass, &location, &region, false);
@@ -85,8 +121,12 @@ void MeshRenderer::Start()
     SDL_SubmitGPUCommandBuffer(commandBuffer);
     SDL_ReleaseGPUTransferBuffer(g_Context.gpuDevice, gpuTransferBuffer);
 
+    SDL_Log("Transfer Completed");
+
     // Setup material
+    SDL_Log("Setting up material");
     m_material->Setup();
+    SDL_Log("Material Set");
 
     std::random_device rd;
 
@@ -110,9 +150,18 @@ void MeshRenderer::Update()
     transform.Rotate({0.f, m_randomRotationSpeed * Time::deltaTime, 0.f});
 }
 
-void MeshRenderer::Render()
+void MeshRenderer::Render(RenderContext &renderContext)
 {
-    // graphicsSystem = SystemManager::Instance().Get<GraphicsSystem>();
+    // SDL_Log("Start Rendering Mesh");
+    MeshBufferData *meshBufferData;
+    auto it = m_meshBufferDataMap.find(m_meshFilePath.c_str());
+    if (it == m_meshBufferDataMap.end()) // no instance yet
+    {
+        SDL_Log("Cant find mesh instance");
+        return;
+    }
+
+    meshBufferData = it->second;
 
     // object matrices
     if (!graphicsSystem)
@@ -126,36 +175,49 @@ void MeshRenderer::Render()
         return;
     }
     // binding gpu pipeline
-    m_material->Bind(graphicsSystem->gpuRenderPass.activeRenderPass);
+    // SDL_Log("Binding material");
+    m_material->Bind(renderContext.renderPass);
 
     // binding vertex buffer
+    // SDL_Log("Binding Vertex Buffer");
     SDL_GPUBufferBinding vertexBufferBindings[1];
-    vertexBufferBindings[0].buffer = gpuVertexBuffer;
+    vertexBufferBindings[0].buffer = meshBufferData->gpuVertexBuffer;
     vertexBufferBindings[0].offset = 0;
-    SDL_BindGPUVertexBuffers(graphicsSystem->gpuRenderPass.activeRenderPass, 0, vertexBufferBindings, 1);
+    SDL_BindGPUVertexBuffers(renderContext.renderPass, 0, vertexBufferBindings, 1);
 
     // binding index buffer
+    // SDL_Log("Binding index Buffer");
     SDL_GPUBufferBinding indexBufferBindings;
-    indexBufferBindings.buffer = gpuIndexBuffer;
+    indexBufferBindings.buffer = meshBufferData->gpuIndexBuffer;
     indexBufferBindings.offset = 0;
-    SDL_BindGPUIndexBuffer(graphicsSystem->gpuRenderPass.activeRenderPass, &indexBufferBindings, SDL_GPU_INDEXELEMENTSIZE_32BIT);
+    SDL_BindGPUIndexBuffer(renderContext.renderPass, &indexBufferBindings, SDL_GPU_INDEXELEMENTSIZE_32BIT);
 
+    // SDL_Log("push Fragment Uniform Data");
     FragmentUniformBufferData fragmentUniformBufferData{};
     fragmentUniformBufferData.viewPosition = g_Context.mainCamera->transform.GetPosition();
     SDL_PushGPUFragmentUniformData(graphicsSystem->gpuCommandBuffer, 0, &fragmentUniformBufferData, sizeof(FragmentUniformBufferData));
-
-    VertexUniformBufferObject vertexUniformBufferObject{};
-    vertexUniformBufferObject.viewProjection = g_Context.mainCamera->transform.GetViewProjectionMatrix();
-    vertexUniformBufferObject.model = transform.GetModelMatrix();
-    SDL_PushGPUVertexUniformData(graphicsSystem->gpuCommandBuffer, 0, &vertexUniformBufferObject, sizeof(VertexUniformBufferObject));
-
-    SDL_DrawGPUIndexedPrimitives(graphicsSystem->gpuRenderPass.activeRenderPass, m_mesh.GetIndexCount(), 1, 0, 0, 0);
 }
 
 void MeshRenderer::OnDestroy()
 {
     // release buffers
     Renderer::OnDestroy();
+
+    auto it = m_meshBufferDataMap.find(m_meshFilePath);
+    if (it != m_meshBufferDataMap.end())
+    {
+        SDL_Log("Release GPU Buffers For Mesh: %s", m_meshFilePath.c_str());
+        auto meshBufferData = it->second;
+
+        if (meshBufferData->gpuVertexBuffer)
+            SDL_ReleaseGPUBuffer(g_Context.gpuDevice, meshBufferData->gpuVertexBuffer);
+        if (meshBufferData->gpuIndexBuffer)
+            SDL_ReleaseGPUBuffer(g_Context.gpuDevice, meshBufferData->gpuIndexBuffer);
+        if (meshBufferData->gpuVertexUniformBuffer)
+            SDL_ReleaseGPUBuffer(g_Context.gpuDevice, meshBufferData->gpuVertexUniformBuffer);
+
+        m_meshBufferDataMap.erase(m_meshFilePath);
+    }
 
     m_material.reset();
 }
@@ -171,12 +233,6 @@ void MeshRenderer::LoadMesh(const char *filePath, Mesh &outMesh)
     }
 
     SDL_Log("Loaded %zu vertices, %zu indices", vertices.size(), indices.size());
-
-    // create the vertex buffer
-    gpuVertexBufferInfo.size += (Uint32)(vertices.size() * sizeof(Vertex));
-
-    // create the index buffer
-    gpuIndexBufferInfo.size += (Uint32)(indices.size() * sizeof(Uint32));
 
     outMesh.vertices = vertices;
     outMesh.indices = indices;

@@ -1,5 +1,7 @@
 #pragma once
 
+#define MAX_INSTANCE 64
+
 #include <vector>
 #include <SDL3/SDL.h>
 #include <glm/glm.hpp>
@@ -11,7 +13,7 @@ namespace MonkeyDEngine
     struct VertexUniformBufferObject
     {
         glm::mat4 viewProjection;
-        glm::mat4 model;
+        glm::mat4 model[MAX_INSTANCE];
     };
 
     struct FragmentUniformBufferData
@@ -19,9 +21,16 @@ namespace MonkeyDEngine
         glm::vec3 viewPosition;
     };
 
+    struct RenderContext
+    {
+        SDL_GPURenderPass *renderPass;
+        VertexUniformBufferObject vertexUniformBufferObject{};
+
+        int currentModelIndex;
+    };
+
     struct RenderPassData
     {
-        SDL_GPURenderPass *activeRenderPass;
         std::vector<Renderer *> renderers;
 
         void AddRenderer(Renderer *newRenderer)

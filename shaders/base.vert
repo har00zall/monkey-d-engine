@@ -9,15 +9,15 @@ layout(location = 2) out vec2 fragTexCoord;
 
 layout(set = 1, binding = 0) uniform UniformBufferObject {
     mat4 viewProjection;
-    mat4 model;
+    mat4 model[64];
 } uniformBufferObject;
 
 void main() {
-    mat4 modelMatrix = uniformBufferObject.model;
+    mat4 modelMatrix = uniformBufferObject.model[gl_InstanceIndex];
     fragPos = vec3(modelMatrix * vec4(inPosition, 1.0));
 
     gl_Position = uniformBufferObject.viewProjection * vec4(fragPos, 1.0);
 
-    fragNormal = mat3(uniformBufferObject.model) * inNormal;
+    fragNormal = mat3(uniformBufferObject.model[gl_InstanceIndex]) * inNormal;
     fragTexCoord = inUV;
 }

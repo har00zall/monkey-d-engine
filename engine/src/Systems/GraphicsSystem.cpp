@@ -1,8 +1,11 @@
 #include <SDL3/SDL.h>
 #include <exception>
+#include <vector>
 #include "Context.h"
 #include "Core/3D/Geometry.h"
 #include "Components/Renderer.h"
+#include "Components/MeshRenderer.h"
+#include "Components/Camera.h"
 #include "GraphicsSystem.h"
 
 using namespace MonkeyDEngine;
@@ -81,13 +84,33 @@ int GraphicsSystem::Render3D()
     depthTargetInfo.cycle = true;
 
     // begin a render pass
-    gpuRenderPass.activeRenderPass = SDL_BeginGPURenderPass(gpuCommandBuffer, &colorTargetInfo, 1, &depthTargetInfo);
+    RenderContext renderContext{};
+    for (auto &rendererToRender : MeshRenderer::m_meshBufferDataMap)
+    {
+        renderContext.renderPass = SDL_BeginGPURenderPass(gpuCommandBuffer, &colorTargetInfo, 1, &depthTargetInfo);
 
-    // draw calls go here
-    for (auto meshToRender : gpuRenderPass.renderers)
-        meshToRender->Render();
+        renderContext.vertexUniformBufferObject.viewProjection = g_Context.mainCamera->transform.GetViewProjectionMatrix();
 
-    SDL_EndGPURenderPass(gpuRenderPass.activeRenderPass); // end the render pass
+        // draw calls go here
+        for (auto meshToRender : rendererToRender.second->renderers)
+        {
+            if (renderContext.currentModelIndex >= MAX_INSTANCE)
+                break;
+            meshToRender->Render(renderContext);
+
+            renderContext.vertexUniformBufferObject.model[renderContext.currentModelIndex] = meshToRender->transform.GetModelMatrix();
+
+            renderContext.currentModelIndex++;
+        }
+
+        // SDL_Log("Push GPU Vertex Uniform Data");
+        SDL_PushGPUVertexUniformData(gpuCommandBuffer, 0, &renderContext.vertexUniformBufferObject, sizeof(VertexUniformBufferObject));
+
+        // SDL_Log("Draw Index");
+        SDL_DrawGPUIndexedPrimitives(renderContext.renderPass, rendererToRender.second->mesh.GetIndexCount(), renderContext.currentModelIndex, 0, 0, 0);
+    }
+
+    SDL_EndGPURenderPass(renderContext.renderPass); // end the render pass
     SDL_SubmitGPUCommandBuffer(gpuCommandBuffer);
 
     return SDL_APP_CONTINUE;

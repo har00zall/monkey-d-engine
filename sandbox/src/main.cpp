@@ -26,14 +26,14 @@ int main(int argc, char *argv[])
 
     // Adding monkey objects ( 1 object = 1 draw call)
     float startingX = -12, startingZ = 0;
-    for (Uint16 x = 0; x < 5; x++)
+    for (Uint16 x = 0; x < 8; x++)
     {
-        for (Uint16 z = 0; z < 1; z++)
+        for (Uint16 z = 0; z < 8; z++)
         {
             auto entity = Entity::Create();
             auto meshToRender = entity->AddComponent<MeshRenderer>("assets/monkey_chad.gltf");
-
             auto meshMaterial = std::make_shared<Material>("shaders/base.vert.spv", "shaders/base.frag.spv", "assets/monkey_diffuse.png");
+
             meshToRender->SetMaterial(meshMaterial);
             meshToRender->transform.SetPosition({startingX + x * 6.f, 0.f, startingZ - z * 6.f});
 

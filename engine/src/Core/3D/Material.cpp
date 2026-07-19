@@ -79,9 +79,9 @@ Material *MonkeyDEngine::Material::Setup()
     pipelineInfo.target_info.depth_stencil_format = SDL_GPU_TEXTUREFORMAT_D32_FLOAT;
     pipelineInfo.target_info.has_depth_stencil_target = true;
     pipelineInfo.vertex_input_state.num_vertex_buffers = 1;
-    pipelineInfo.vertex_input_state.vertex_buffer_descriptions = vertexBufferDesctiptions;
     pipelineInfo.vertex_input_state.num_vertex_attributes = 3;
     pipelineInfo.vertex_input_state.vertex_attributes = vertexAttributes;
+    pipelineInfo.vertex_input_state.vertex_buffer_descriptions = vertexBufferDesctiptions;
     pipelineInfo.target_info.num_color_targets = 1;
     pipelineInfo.target_info.color_target_descriptions = colorTargetDescriptions;
 

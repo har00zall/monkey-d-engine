@@ -18,16 +18,11 @@ void Renderer::Update()
 {
 }
 
-void Renderer::Render()
+void Renderer::Render(RenderContext &renderContext)
 {
 }
 
 void Renderer::OnDestroy()
 {
     graphicsSystem->gpuRenderPass.RemoveRenderer(this);
-
-    // release buffers
-    SDL_ReleaseGPUBuffer(g_Context.gpuDevice, gpuVertexBuffer);
-    SDL_ReleaseGPUBuffer(g_Context.gpuDevice, gpuIndexBuffer);
-    SDL_ReleaseGPUBuffer(g_Context.gpuDevice, gpuVertexUniformBuffer);
 }
