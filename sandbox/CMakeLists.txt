@@ -21,7 +21,7 @@ function(add_shader TARGET SHADER SHADER_TYPE)
     add_custom_command(
         OUTPUT ${SHADER_OUTPUT}
         COMMAND ${GLSL_VALIDATOR} -fshader-stage=${SHADER_TYPE} ${CMAKE_SOURCE_DIR}/assets/shaders/${SHADER} -o ${SHADER_OUTPUT}
-        DEPENDS ${CMAKE_SOURCE_DIR}/shaders/${SHADER}
+        DEPENDS ${CMAKE_SOURCE_DIR}/assets/shaders/${SHADER}
         COMMENT "Compiling shader ${SHADER} (${SHADER_TYPE}) to SPIR-V"
     )
 

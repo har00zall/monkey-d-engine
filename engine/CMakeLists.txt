@@ -1,5 +1,5 @@
-file(GLOB_RECURSE ENGINE_SOURCES "src/*.cpp" "src/**/*.cpp")
-file(GLOB_RECURSE ENGINE_HEADERS "src/*.h" "src/**/*.h" "src/*.hpp")
+file(GLOB_RECURSE ENGINE_SOURCES "src/*.cpp" "src/**/*.cpp" "${CMAKE_SOURCE_DIR}/vendors/*.cpp" "${CMAKE_SOURCE_DIR}/vendors/*.c" "${CMAKE_SOURCE_DIR}/vendors/*.cc")
+file(GLOB_RECURSE ENGINE_HEADERS "src/*.h" "src/**/*.h" "src/*.hpp" "${CMAKE_SOURCE_DIR}/vendors/*.hpp" "${CMAKE_SOURCE_DIR}/vendors/*.h")
 
 add_library(Engine STATIC ${ENGINE_SOURCES} ${ENGINE_HEADERS})
 

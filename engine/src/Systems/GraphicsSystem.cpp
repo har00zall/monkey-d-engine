@@ -6,6 +6,10 @@
 #include "Components/Renderer.h"
 #include "Components/MeshRenderer.h"
 #include "Components/Camera.h"
+#include "../../../vendors/imgui/imgui.h"
+#include "../../../vendors/imgui/imgui_impl_sdl3.h"
+#include "../../../vendors/imgui/imgui_impl_sdlgpu3.h"
+#include "Engine.h"
 #include "GraphicsSystem.h"
 
 using namespace MonkeyDEngine;
@@ -27,6 +31,15 @@ void GraphicsSystem::OnStartSystem()
     // create depth texture
     CreateDepthTexture();
 
+    ImGui_ImplSDL3_InitForSDLGPU(g_Context.window);
+    ImGui_ImplSDLGPU3_InitInfo initInfo{};
+    initInfo.Device = g_Context.gpuDevice;
+    initInfo.ColorTargetFormat = SDL_GetGPUSwapchainTextureFormat(g_Context.gpuDevice, g_Context.window);
+    initInfo.MSAASamples = SDL_GPU_SAMPLECOUNT_1;
+    initInfo.SwapchainComposition = SDL_GPU_SWAPCHAINCOMPOSITION_SDR;
+    initInfo.PresentMode = SDL_GPU_PRESENTMODE_VSYNC;
+    ImGui_ImplSDLGPU3_Init(&initInfo);
+
     SDL_Log("\t\t\t\t[End] Graphics System Initialization Complete");
 
     // Creating main camera (for now I put it here)
@@ -35,7 +48,11 @@ void GraphicsSystem::OnStartSystem()
 
 void GraphicsSystem::OnStopSystem()
 {
+    SDL_WaitForGPUIdle(g_Context.gpuDevice);
     SDL_Log("\t\t\t[Starting] Clearing Graphics System");
+    ImGui_ImplSDL3_Shutdown();
+    ImGui_ImplSDLGPU3_Shutdown();
+    ImGui::DestroyContext();
 
     if (depthTexture)
         SDL_ReleaseGPUTexture(g_Context.gpuDevice, depthTexture);
@@ -47,6 +64,27 @@ void GraphicsSystem::OnStopSystem()
 
 int GraphicsSystem::Render3D()
 {
+    ImGui_ImplSDLGPU3_NewFrame();
+    ImGui_ImplSDL3_NewFrame();
+    ImGui::NewFrame();
+
+    if (USE_IMGUI_DEBUGGER)
+    {
+        if (ImGui::Begin("Metric", 0))
+        {
+            ImGui::Text("Dear ImGui %s", ImGui::GetVersion());
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            ImGui::Text("%d vertices, %d indices (%d triangles)", ImGui::GetIO().MetricsRenderVertices, ImGui::GetIO().MetricsRenderIndices, ImGui::GetIO().MetricsRenderIndices / 3);
+            // ImGui::Text("%d allocations", (int)GImAllocatorActiveAllocationsCount);
+        }
+        ImGui::End();
+        ImGui::ShowDebugLogWindow();
+    }
+
+    ImGui::Render();
+
+    ImDrawData *drawData = ImGui::GetDrawData();
+
     // acquire the command buffer
     gpuCommandBuffer = SDL_AcquireGPUCommandBuffer(g_Context.gpuDevice);
 
@@ -66,6 +104,8 @@ int GraphicsSystem::Render3D()
         SDL_SubmitGPUCommandBuffer(gpuCommandBuffer);
         return SDL_APP_CONTINUE;
     }
+
+    ImGui_ImplSDLGPU3_PrepareDrawData(drawData, gpuCommandBuffer);
 
     // create the color target (now +depth)
     SDL_GPUColorTargetInfo colorTargetInfo{};
@@ -109,6 +149,8 @@ int GraphicsSystem::Render3D()
         // SDL_Log("Draw Index");
         SDL_DrawGPUIndexedPrimitives(renderContext.renderPass, rendererToRender.second->mesh.GetIndexCount(), renderContext.currentModelIndex, 0, 0, 0);
     }
+
+    ImGui_ImplSDLGPU3_RenderDrawData(drawData, gpuCommandBuffer, renderContext.renderPass);
 
     SDL_EndGPURenderPass(renderContext.renderPass); // end the render pass
     SDL_SubmitGPUCommandBuffer(gpuCommandBuffer);

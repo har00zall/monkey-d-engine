@@ -9,6 +9,9 @@
 #include "Systems/GraphicsSystem.h"
 #include "Components/Camera.h"
 #include "Components/MeshRenderer.h"
+#include "../../vendors/imgui/imgui.h"
+#include "../../vendors/imgui/imgui_impl_sdl3.h"
+#include "../../vendors/imgui/imgui_impl_sdlgpu3.h"
 #include "Context.h"
 #include "Engine.h"
 
@@ -49,6 +52,12 @@ namespace MonkeyDEngine
         }
         SDL_Log("Window has been created");
 
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO io = ImGui::GetIO();
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+
         // Init Engine System
         SDL_Log("[Starting] Register and Start Systems");
         SystemManager::Instance()
@@ -85,6 +94,7 @@ namespace MonkeyDEngine
 
             while (SDL_PollEvent(&event))
             {
+                ImGui_ImplSDL3_ProcessEvent(&event);
                 switch (event.type)
                 {
                 case SDL_EVENT_WINDOW_RESIZED:

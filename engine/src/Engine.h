@@ -1,3 +1,5 @@
+#define USE_IMGUI_DEBUGGER true
+
 #pragma once
 
 #include <vector>
