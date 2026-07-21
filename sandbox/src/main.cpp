@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
         {
             auto entity = Entity::Create();
             auto meshToRender = entity->AddComponent<MeshRenderer>("assets/monkey_chad.gltf");
-            auto meshMaterial = std::make_shared<Material>("shaders/base.vert.spv", "shaders/base.frag.spv", "assets/monkey_diffuse.png");
+            auto meshMaterial = std::make_shared<Material>("assets/shaders/base.vert.spv", "assets/shaders/base.frag.spv", "assets/monkey_diffuse.png");
 
             meshToRender->SetMaterial(meshMaterial);
             meshToRender->transform.SetPosition({startingX + x * 6.f, 0.f, startingZ - z * 6.f});
