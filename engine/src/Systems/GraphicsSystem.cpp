@@ -2,6 +2,7 @@
 #include <exception>
 #include <vector>
 #include "Context.h"
+#include "Core/3D/Shader.h"
 #include "Core/3D/Geometry.h"
 #include "Components/Renderer.h"
 #include "Components/MeshRenderer.h"
@@ -57,6 +58,11 @@ void GraphicsSystem::OnStopSystem()
     if (depthTexture)
         SDL_ReleaseGPUTexture(g_Context.gpuDevice, depthTexture);
 
+    for (auto &shader : gpuShaderData.shaders)
+    {
+        shader->Dispose();
+    }
+
     // destroy the GPU device
     SDL_DestroyGPUDevice(g_Context.gpuDevice);
     SDL_Log("\t\t\t[End] Graphics System Clearing Completed");
@@ -105,8 +111,6 @@ int GraphicsSystem::Render3D()
         return SDL_APP_CONTINUE;
     }
 
-    ImGui_ImplSDLGPU3_PrepareDrawData(drawData, gpuCommandBuffer);
-
     // create the color target (now +depth)
     SDL_GPUColorTargetInfo colorTargetInfo{};
     colorTargetInfo.clear_color = {186.f / 255.f, 221.f / 255.f, 250.f / 250.f, 1.0f};
@@ -125,9 +129,9 @@ int GraphicsSystem::Render3D()
 
     // begin a render pass
     RenderContext renderContext{};
+    renderContext.renderPass = SDL_BeginGPURenderPass(gpuCommandBuffer, &colorTargetInfo, 1, &depthTargetInfo);
     for (auto &rendererToRender : MeshRenderer::m_meshBufferDataMap)
     {
-        renderContext.renderPass = SDL_BeginGPURenderPass(gpuCommandBuffer, &colorTargetInfo, 1, &depthTargetInfo);
 
         renderContext.vertexUniformBufferObject.viewProjection = g_Context.mainCamera->transform.GetViewProjectionMatrix();
 
@@ -149,10 +153,24 @@ int GraphicsSystem::Render3D()
         // SDL_Log("Draw Index");
         SDL_DrawGPUIndexedPrimitives(renderContext.renderPass, rendererToRender.second->mesh.GetIndexCount(), renderContext.currentModelIndex, 0, 0, 0);
     }
-
-    ImGui_ImplSDLGPU3_RenderDrawData(drawData, gpuCommandBuffer, renderContext.renderPass);
-
     SDL_EndGPURenderPass(renderContext.renderPass); // end the render pass
+
+    // TO DO: Create separate pipeline for UI
+    ImGui_ImplSDLGPU3_PrepareDrawData(drawData, gpuCommandBuffer);
+
+    // create the color target (now +depth)
+    SDL_GPUColorTargetInfo uiColorTargetInfo{};
+    uiColorTargetInfo.clear_color = {186.f / 255.f, 221.f / 255.f, 250.f / 250.f, 1.0f};
+    uiColorTargetInfo.load_op = SDL_GPU_LOADOP_LOAD;
+    uiColorTargetInfo.store_op = SDL_GPU_STOREOP_STORE;
+    uiColorTargetInfo.texture = swapchainTexture;
+    uiColorTargetInfo.layer_or_depth_plane = 0;
+
+    SDL_GPURenderPass *uiRenderPass = SDL_BeginGPURenderPass(gpuCommandBuffer, &uiColorTargetInfo, 1, NULL);
+    ImGui_ImplSDLGPU3_RenderDrawData(drawData, gpuCommandBuffer, uiRenderPass);
+
+    SDL_EndGPURenderPass(uiRenderPass);
+
     SDL_SubmitGPUCommandBuffer(gpuCommandBuffer);
 
     return SDL_APP_CONTINUE;

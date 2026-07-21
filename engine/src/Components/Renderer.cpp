@@ -11,7 +11,7 @@ using namespace MonkeyDEngine;
 void Renderer::Start()
 {
     graphicsSystem = SystemManager::Instance().GetSystem<GraphicsSystem>();
-    graphicsSystem->gpuRenderPass.AddRenderer(this);
+    graphicsSystem->gpuRendererData.AddRenderer(this);
 }
 
 void Renderer::Update()
@@ -24,5 +24,5 @@ void Renderer::Render(RenderContext &renderContext)
 
 void Renderer::OnDestroy()
 {
-    graphicsSystem->gpuRenderPass.RemoveRenderer(this);
+    graphicsSystem->gpuRendererData.RemoveRenderer(this);
 }

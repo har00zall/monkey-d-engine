@@ -9,6 +9,7 @@
 
 namespace MonkeyDEngine
 {
+    class Shader;
     class Renderer;
     struct VertexUniformBufferObject
     {
@@ -29,7 +30,7 @@ namespace MonkeyDEngine
         int currentModelIndex;
     };
 
-    struct RenderPassData
+    struct RendererData
     {
         std::vector<Renderer *> renderers;
 
@@ -45,6 +46,21 @@ namespace MonkeyDEngine
         }
     };
 
+    struct ShaderData
+    {
+        std::vector<Shader *> shaders;
+        void AddShader(Shader *newShader)
+        {
+            shaders.push_back(newShader);
+        }
+        void RemoveShader(Shader *shader)
+        {
+            shaders.erase(
+                std::remove(shaders.begin(), shaders.end(), shader),
+                shaders.end());
+        }
+    };
+
     class GraphicsSystem : public SystemBase
     {
     public:
@@ -53,7 +69,8 @@ namespace MonkeyDEngine
         SDL_GPUTexture *depthTexture; // z-buffer
 
         SDL_GPUCommandBuffer *gpuCommandBuffer;
-        RenderPassData gpuRenderPass{};
+        RendererData gpuRendererData{};
+        ShaderData gpuShaderData{};
 
         int Render3D();
         void CreateDepthTexture();
