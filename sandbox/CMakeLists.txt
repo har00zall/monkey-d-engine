@@ -5,7 +5,7 @@ add_executable(Sandbox ${SANDBOX_SOURCES} ${SANDBOX_HEADERS})
 
 # Custom functions
 # Shader Compilation function
-find_program(GLSL_VALIDATOR glslc HINTS ${Vulkan_GLSLC_EXECUTABLE} /usr/bin /usr/local/bin ${VULKAN_SDK}/Bin ${VULKAN_SDK_PATH}/Bin32)
+find_program(GLSL_VALIDATOR glslc HINTS /usr/bin /usr/local/bin ${VULKAN_SDK}/Bin ${VULKAN_SDK_PATH}/Bin32)
 if(NOT GLSL_VALIDATOR)
     message(FATAL_ERROR "glslc not found! Make sure Vulkan SDK is installed and glslc is in PATH")
 endif()
