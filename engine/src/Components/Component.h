@@ -18,5 +18,6 @@ namespace MonkeyDEngine
         virtual void Start();
         virtual void Update();
         virtual void OnDestroy();
+        virtual void OnEvent(SDL_Event *event);
     };
 };

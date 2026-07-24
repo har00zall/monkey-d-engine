@@ -17,6 +17,9 @@ Material::Material(std::shared_ptr<Shader> vertexShaderPath, std::shared_ptr<Sha
 
 MonkeyDEngine::Material::~Material()
 {
+    if (!m_isSet)
+        return;
+
     if (vertexShader)
     {
         vertexShader = nullptr;
@@ -31,10 +34,15 @@ MonkeyDEngine::Material::~Material()
 
     // release the pipeline
     SDL_ReleaseGPUGraphicsPipeline(g_Context.gpuDevice, gpuGraphicsPipeline);
+
+    m_isSet = false;
 }
 
 Material *MonkeyDEngine::Material::Setup()
 {
+    if (m_isSet)
+        return this;
+
     // describe the vertex buffers
     SDL_GPUVertexBufferDescription vertexBufferDesctiptions[1];
     vertexBufferDesctiptions[0].slot = 0;
@@ -155,6 +163,8 @@ Material *MonkeyDEngine::Material::Setup()
 
     // Clean up RAM resources
     SDL_DestroySurface(rgbaSurface);
+
+    m_isSet = true;
 
     return this;
 }

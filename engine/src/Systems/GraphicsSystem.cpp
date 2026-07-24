@@ -58,11 +58,6 @@ void GraphicsSystem::OnStopSystem()
     if (depthTexture)
         SDL_ReleaseGPUTexture(g_Context.gpuDevice, depthTexture);
 
-    for (auto &shader : gpuShaderData.shaders)
-    {
-        shader->Dispose();
-    }
-
     // destroy the GPU device
     SDL_DestroyGPUDevice(g_Context.gpuDevice);
     SDL_Log("\t\t\t[End] Graphics System Clearing Completed");

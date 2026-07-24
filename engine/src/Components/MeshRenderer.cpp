@@ -219,7 +219,8 @@ void MeshRenderer::OnDestroy()
         m_meshBufferDataMap.erase(m_meshFilePath);
     }
 
-    m_material.reset();
+    // m_material->Dispose();
+    m_material = nullptr;
 }
 
 void MeshRenderer::LoadMesh(const char *filePath, Mesh &outMesh)

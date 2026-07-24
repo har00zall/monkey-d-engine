@@ -14,3 +14,7 @@ void Component::Update()
 void Component::OnDestroy()
 {
 }
+
+void Component::OnEvent(SDL_Event *event)
+{
+}

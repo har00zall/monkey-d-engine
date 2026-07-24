@@ -12,6 +12,8 @@ protected:
           deltaMousePositionX = 0,
           deltaMousePositionY = 0;
 
+    bool m_lastFrameCursorShowStatus;
+
 public:
     void Start() override;
     void Update() override;

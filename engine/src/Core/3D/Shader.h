@@ -29,7 +29,6 @@ namespace MonkeyDEngine
                Uint32 num_storage_textures = 0,
                Uint32 num_uniform_buffers = 0);
 
-        void Dispose();
         SDL_GPUShader *GetShaderInstance();
         SDL_GPUShader *CreateShader();
     };

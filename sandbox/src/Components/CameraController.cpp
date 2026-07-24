@@ -8,8 +8,6 @@ using namespace MonkeyDEngine;
 
 void CameraController::Start()
 {
-    SDL_SetWindowMouseGrab(g_Context.window, false);
-
     g_Context.mainCamera->transform.SetPosition({0.0f, 20, -25.0f});
     g_Context.mainCamera->transform.LookAt({0.f, 0.f, 0.f});
 }
@@ -44,12 +42,24 @@ void CameraController::Update()
         (directionF * movementSpeed * Time::deltaTime * g_Context.mainCamera->transform.GetForward()) +
         (directionV * movementSpeed * Time::deltaTime * g_Context.mainCamera->transform.GetUp()));
 
-    if (mouseStates == SDL_BUTTON_LEFT)
+    bool isMouseLeftDown = mouseStates == SDL_BUTTON_LEFT;
+
+    if (isMouseLeftDown)
     {
         g_Context.mainCamera->transform.Rotate({0.f, deltaMousePositionX * lookSpeed * Time::deltaTime, 0.f});
         g_Context.mainCamera->transform.Rotate({deltaMousePositionY * -lookSpeed * Time::deltaTime, 0.f, 0.f});
+        SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, "1");
+        SDL_SetWindowMouseRect(g_Context.window, NULL);
     }
+
+    // if (m_lastFrameCursorShowStatus && !isMouseLeftDown)
+    // SDL_WarpMouseInWindow(g_Context.window, g_Context.swapchainTextureSize.width / 2, g_Context.swapchainTextureSize.height / 2);
+    // SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, "0");
+    SDL_SetWindowRelativeMouseMode(g_Context.window, isMouseLeftDown);
+    SDL_SetWindowMouseGrab(g_Context.window, isMouseLeftDown);
 
     previousX = currentMouseX;
     previousY = currentMouseY;
+
+    m_lastFrameCursorShowStatus = isMouseLeftDown;
 }

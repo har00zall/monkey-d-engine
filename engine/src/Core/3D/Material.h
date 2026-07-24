@@ -9,6 +9,8 @@ namespace MonkeyDEngine
     class Material
     {
     protected:
+        bool m_isSet = false;
+
         SDL_GPUTexture *m_texture;
         SDL_GPUSampler *m_textureSampler;
 

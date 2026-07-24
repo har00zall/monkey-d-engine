@@ -11,6 +11,8 @@ MonkeyDEngine::Shader::Shader()
 
 Shader::~Shader()
 {
+    if (shaderInstance)
+        SDL_ReleaseGPUShader(g_Context.gpuDevice, shaderInstance);
 }
 
 Shader::Shader(
@@ -29,12 +31,6 @@ Shader::Shader(
     m_storageBuffersCount = storageBuffersCount;
     m_storageTexturesCount = storageTexturesCount;
     m_uniformBuffersCount = uniformBuffersCount;
-}
-
-void Shader::Dispose()
-{
-    if (shaderInstance)
-        SDL_ReleaseGPUShader(g_Context.gpuDevice, shaderInstance);
 }
 
 SDL_GPUShader *MonkeyDEngine::Shader::GetShaderInstance()
