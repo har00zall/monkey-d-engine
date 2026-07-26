@@ -7,11 +7,6 @@ class CameraController : public MonkeyDEngine::Component
 protected:
     float movementSpeed = 15.f, lookSpeed = 15.f;
 
-    float previousX = 0,
-          previousY = 0,
-          deltaMousePositionX = 0,
-          deltaMousePositionY = 0;
-
     bool m_lastFrameCursorShowStatus;
 
 public:

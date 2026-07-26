@@ -7,6 +7,7 @@
 #include "Core/System/SystemManager.h"
 #include "Systems/SceneSystem.h"
 #include "Systems/GraphicsSystem.h"
+#include "Systems/InputSystem.h"
 #include "Components/Camera.h"
 #include "Components/MeshRenderer.h"
 #include "../../vendors/imgui/imgui.h"
@@ -64,6 +65,7 @@ namespace MonkeyDEngine
             .RegisterSystems({
                 {.autoStart = false, .type = typeid(SceneSystem), .instance = std::make_shared<SceneSystem>()}, // make sure you SceneSystem is registered first
                 {.autoStart = true, .type = typeid(GraphicsSystem), .instance = std::make_shared<GraphicsSystem>()},
+                {.autoStart = true, .type = typeid(InputSystem), .instance = std::make_shared<InputSystem>()},
             });
         SDL_Log("[End] Systems Registered and Started");
 
@@ -94,6 +96,8 @@ namespace MonkeyDEngine
 
             while (SDL_PollEvent(&event))
             {
+                SystemManager::Instance().GetSystem<InputSystem>()->HandlerInputEvent(&event);
+
                 ImGui_ImplSDL3_ProcessEvent(&event);
                 switch (event.type)
                 {
@@ -107,6 +111,8 @@ namespace MonkeyDEngine
                     break;
                 }
             }
+            // Input Update
+            SystemManager::Instance().GetSystem<InputSystem>()->OnUpdateSystem();
 
             // Game Update
             SystemManager::Instance().GetSystem<SceneSystem>()->Update();

@@ -1,6 +1,7 @@
 #include "Context.h"
 #include "Core/OS/Time.h"
 #include "Core/3D/Geometry.h"
+#include "Systems/InputSystem.h"
 #include "Components/Camera.h"
 #include "Components/CameraController.h"
 
@@ -17,8 +18,6 @@ void CameraController::Update()
     float currentMouseX, currentMouseY;
     auto keyStates = SDL_GetKeyboardState(NULL);
     auto mouseStates = SDL_GetMouseState(&currentMouseX, &currentMouseY);
-    deltaMousePositionX = currentMouseX - previousX;
-    deltaMousePositionY = currentMouseY - previousY;
 
     int directionH = 0;
     int directionF = 0;
@@ -46,20 +45,17 @@ void CameraController::Update()
 
     if (isMouseLeftDown)
     {
-        g_Context.mainCamera->transform.Rotate({0.f, deltaMousePositionX * lookSpeed * Time::deltaTime, 0.f});
-        g_Context.mainCamera->transform.Rotate({deltaMousePositionY * -lookSpeed * Time::deltaTime, 0.f, 0.f});
-        SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, "1");
-        SDL_SetWindowMouseRect(g_Context.window, NULL);
+        g_Context.mainCamera->transform.Rotate({0.f, InputSystem::mouse->deltaX * lookSpeed * Time::deltaTime, 0.f});
+        g_Context.mainCamera->transform.Rotate({InputSystem::mouse->deltaY * -lookSpeed * Time::deltaTime, 0.f, 0.f});
     }
 
-    // if (m_lastFrameCursorShowStatus && !isMouseLeftDown)
-    // SDL_WarpMouseInWindow(g_Context.window, g_Context.swapchainTextureSize.width / 2, g_Context.swapchainTextureSize.height / 2);
-    // SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, "0");
+    if (m_lastFrameCursorShowStatus && m_lastFrameCursorShowStatus != isMouseLeftDown)
+    {
+        SDL_WarpMouseInWindow(g_Context.window, g_Context.swapchainTextureSize.width / 2, g_Context.swapchainTextureSize.height / 2);
+    }
+
     SDL_SetWindowRelativeMouseMode(g_Context.window, isMouseLeftDown);
     SDL_SetWindowMouseGrab(g_Context.window, isMouseLeftDown);
-
-    previousX = currentMouseX;
-    previousY = currentMouseY;
 
     m_lastFrameCursorShowStatus = isMouseLeftDown;
 }
