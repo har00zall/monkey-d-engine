@@ -9,6 +9,8 @@
 #include "Core/3D/Material.h"
 #include "Core/System/SystemManager.h"
 #include "Systems/GraphicsSystem.h"
+#include "Systems/SceneSystem.h"
+#include "Components/Transform.h"
 #include "Camera.h"
 #include "Renderer.h"
 #include "MeshRenderer.h"
@@ -147,7 +149,7 @@ void MeshRenderer::Start()
 
 void MeshRenderer::Update()
 {
-    transform.Rotate({0.f, m_randomRotationSpeed * Time::deltaTime, 0.f});
+    owner->GetTransform()->Rotate({0.f, m_randomRotationSpeed * Time::deltaTime, 0.f});
 }
 
 void MeshRenderer::Render(RenderContext &renderContext)
@@ -194,7 +196,7 @@ void MeshRenderer::Render(RenderContext &renderContext)
 
     // SDL_Log("push Fragment Uniform Data");
     FragmentUniformBufferData fragmentUniformBufferData{};
-    fragmentUniformBufferData.viewPosition = g_Context.mainCamera->transform.GetPosition();
+    fragmentUniformBufferData.viewPosition = g_Context.mainCamera->owner->GetTransform()->GetPosition();
     SDL_PushGPUFragmentUniformData(graphicsSystem->gpuCommandBuffer, 0, &fragmentUniformBufferData, sizeof(FragmentUniformBufferData));
 }
 

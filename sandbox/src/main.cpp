@@ -38,8 +38,8 @@ int main(int argc, char *argv[])
             auto entity = Entity::Create();
             auto meshToRender = entity->AddComponent<MeshRenderer>("assets/monkey_chad.gltf");
 
+            entity->transform->SetPosition({startingX + x * 6.f, 0.f, startingZ - z * 6.f});
             meshToRender->SetMaterial(meshMaterial);
-            meshToRender->transform.SetPosition({startingX + x * 6.f, 0.f, startingZ - z * 6.f});
 
             mainScene->entities.push_back(std::move(entity));
         }

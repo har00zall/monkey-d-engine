@@ -11,6 +11,7 @@
 #include "../../../vendors/imgui/imgui_impl_sdl3.h"
 #include "../../../vendors/imgui/imgui_impl_sdlgpu3.h"
 #include "Engine.h"
+#include "SceneSystem.h"
 #include "GraphicsSystem.h"
 
 using namespace MonkeyDEngine;
@@ -128,7 +129,7 @@ int GraphicsSystem::Render3D()
     for (auto &rendererToRender : MeshRenderer::m_meshBufferDataMap)
     {
 
-        renderContext.vertexUniformBufferObject.viewProjection = g_Context.mainCamera->transform.GetViewProjectionMatrix();
+        renderContext.vertexUniformBufferObject.viewProjection = g_Context.mainCamera->owner->GetTransform()->GetViewProjectionMatrix();
 
         // draw calls go here
         for (auto meshToRender : rendererToRender.second->renderers)
@@ -137,7 +138,7 @@ int GraphicsSystem::Render3D()
                 break;
             meshToRender->Render(renderContext);
 
-            renderContext.vertexUniformBufferObject.model[renderContext.currentModelIndex] = meshToRender->transform.GetModelMatrix();
+            renderContext.vertexUniformBufferObject.model[renderContext.currentModelIndex] = meshToRender->owner->GetTransform()->GetModelMatrix();
 
             renderContext.currentModelIndex++;
         }

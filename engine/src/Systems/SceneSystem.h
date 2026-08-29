@@ -6,6 +6,7 @@
 #include <typeindex>
 #include <concepts>
 #include "Core/System/SystemBase.h"
+#include "Components/Transform.h"
 
 namespace MonkeyDEngine
 {
@@ -17,8 +18,14 @@ namespace MonkeyDEngine
 
     public:
         std::string entityId;
+        std::shared_ptr<Transform> transform;
 
-        Entity() = default;
+        Entity()
+        {
+            transform = AddComponent<Transform>();
+        }
+
+        std::shared_ptr<Transform> GetTransform() { return transform; }
 
         template <typename... Components>
         inline static std::shared_ptr<Entity> Create()
@@ -33,6 +40,7 @@ namespace MonkeyDEngine
         std::shared_ptr<T> AddComponent(Args &&...args)
         {
             auto newComponent = std::make_shared<T>(std::forward<Args>(args)...);
+            newComponent->owner = this;
             m_components.push_back(newComponent);
 
             return newComponent;

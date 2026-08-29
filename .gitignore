@@ -44,3 +44,4 @@ ehthumbs.db
 *.dylib
 *.lib
 *.a
+imgui.ini

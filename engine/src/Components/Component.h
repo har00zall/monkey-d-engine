@@ -1,7 +1,7 @@
 #pragma once
 
+#include <memory>
 #include <SDL3/SDL.h>
-#include "Core/3D/Geometry.h"
 
 namespace MonkeyDEngine
 {
@@ -13,7 +13,6 @@ namespace MonkeyDEngine
         virtual ~Component() = default;
 
         Entity *owner;
-        Transform transform{};
 
         virtual void Start();
         virtual void Update();
