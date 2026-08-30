@@ -15,12 +15,12 @@ namespace MonkeyDEngine
     protected:
         GraphicsSystem *graphicsSystem = nullptr;
 
+        void OnStart() override;
+        void OnUpdate() override;
+
     public:
         Renderer() = default;
         virtual ~Renderer() = default;
-
-        void Start() override;
-        void Update() override;
         void OnDestroy() override;
 
         virtual void Render(RenderContext &renderContext);

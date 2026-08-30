@@ -8,14 +8,21 @@ namespace MonkeyDEngine
     class Entity;
     class Component
     {
+    protected:
+        virtual void OnStart();
+        virtual void OnUpdate();
+
     public:
         Component() = default;
         virtual ~Component() = default;
 
+        bool enabled = true;
+
         Entity *owner;
 
-        virtual void Start();
-        virtual void Update();
+        void Start();
+        void Update();
+
         virtual void OnDestroy();
         virtual void OnEvent(SDL_Event *event);
     };

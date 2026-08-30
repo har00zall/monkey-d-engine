@@ -12,11 +12,11 @@ Camera::Camera()
         g_Context.mainCamera = this;
 }
 
-void Camera::Start()
+void Camera::OnStart()
 {
 }
 
-void Camera::Update()
+void Camera::OnUpdate()
 {
 }
 

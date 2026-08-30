@@ -8,13 +8,13 @@
 
 using namespace MonkeyDEngine;
 
-void Renderer::Start()
+void Renderer::OnStart()
 {
     graphicsSystem = SystemManager::Instance().GetSystem<GraphicsSystem>();
     graphicsSystem->gpuRendererData.AddRenderer(this);
 }
 
-void Renderer::Update()
+void Renderer::OnUpdate()
 {
 }
 

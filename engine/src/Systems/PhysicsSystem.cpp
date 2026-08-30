@@ -12,7 +12,7 @@ void PhysicsSystem::PhysicsUpdate()
     if (m_physicsTicks >= m_physicsTimeSteps)
     {
         m_physicsTicks -= m_physicsTimeSteps;
-        OnPhysicsUpdate();
+        // OnPhysicsUpdate();
     }
 
     b3World_Step(m_worldId, m_physicsTimeSteps, 4);

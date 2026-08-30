@@ -1,12 +1,11 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include "Core/TransformTypeDef.h"
 #include "Component.h"
 
 namespace MonkeyDEngine
 {
-    typedef glm::vec3 Vector3;
-    class Transform : public Component
+    class Transform : public Component, public std::enable_shared_from_this<Transform>
     {
     protected:
         Vector3 position{};
@@ -21,6 +20,9 @@ namespace MonkeyDEngine
         Transform() = default;
         ~Transform() = default;
 
+        std::weak_ptr<Transform> m_parent;
+        std::vector<std::shared_ptr<Transform>> m_children;
+
         Vector3 GetPosition() const { return position; }
         Vector3 GetRotation() const { return rotation; }
         Vector3 GetScale() const { return scale; }
@@ -28,11 +30,25 @@ namespace MonkeyDEngine
         void SetPosition(Vector3 newPosition)
         {
             position = {newPosition.x, newPosition.y, -newPosition.z};
+            if (m_children.size() > 0)
+            {
+                for (auto childTransform : m_children)
+                {
+                    childTransform->Translate(position);
+                }
+            }
             CalculateDirection();
         }
         void SetRotation(Vector3 newRotation)
         {
             rotation = newRotation;
+            if (m_children.size() > 0)
+            {
+                for (auto childTransform : m_children)
+                {
+                    childTransform->Rotate(rotation);
+                }
+            }
             CalculateDirection();
         }
         void SetScale(Vector3 newScale) { scale = newScale; }
@@ -43,6 +59,8 @@ namespace MonkeyDEngine
 
         glm::mat4 GetModelMatrix();
         glm::mat4 GetViewProjectionMatrix();
+
+        void SetParent(std::shared_ptr<Transform> parent);
 
         void Translate(Vector3 delta);
         void Rotate(Vector3 delta);

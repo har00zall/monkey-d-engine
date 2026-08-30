@@ -17,9 +17,10 @@
 #include "Core/3D/Shader.h"
 
 #include "Components/Camera.h"
+#include "Components/Transform.h"
 #include "Components/Rigidbody.h"
-#include "Components/CameraController.h"
 #include "Components/MeshRenderer.h"
+#include "Components/CameraController.h"
 
 #include "Systems/SceneSystem.h"
 
@@ -31,8 +32,17 @@ int main(int argc, char *argv[])
     auto mainScene = std::make_shared<Scene>();
 
     // Adding main camera
-    auto cameraEntity = Entity::Create<Camera, CameraController>();
+    auto cameraEntity = Entity::Create<Camera>();
     mainScene->entities.push_back(cameraEntity);
+
+    // Player Game Object
+    auto playerEntity = Entity::Create<CameraController>();
+    mainScene->entities.push_back(playerEntity);
+    cameraEntity->GetTransform()->SetParent(playerEntity->GetTransform());
+
+    cameraEntity->GetTransform()->SetPosition({0.0f, 10.0f, 0.0f});
+    playerEntity->GetTransform()->SetPosition({0.0f, 0.0f, -40.0f});
+    playerEntity->GetTransform()->LookAt({0.0f, playerEntity->GetTransform()->GetPosition().y, 0.0f});
 
     // Adding monkey objects ( 1 object = 1 draw call)
     float startingX = -12, startingZ = 0;

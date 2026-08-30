@@ -1,20 +1,22 @@
 #include "Context.h"
 #include "Core/OS/Time.h"
 #include "Core/3D/Geometry.h"
+#include "Core/TransformTypeDef.h"
 #include "Systems/InputSystem.h"
 #include "Systems/SceneSystem.h"
 #include "Components/Camera.h"
 #include "Components/CameraController.h"
+#include "Components/CharacterController.h"
 
 using namespace MonkeyDEngine;
 
-void CameraController::Start()
+void CameraController::OnStart()
 {
-    g_Context.mainCamera->owner->GetTransform()->SetPosition({0.0f, 40.0f, -40.0f});
-    g_Context.mainCamera->owner->GetTransform()->LookAt({0.f, 0.f, 0.f});
+    SDL_SetWindowRelativeMouseMode(g_Context.window, true);
+    SDL_SetWindowMouseGrab(g_Context.window, true);
 }
 
-void CameraController::Update()
+void CameraController::OnUpdate()
 {
     float currentMouseX, currentMouseY;
     auto keyStates = SDL_GetKeyboardState(NULL);
@@ -37,26 +39,17 @@ void CameraController::Update()
     if (keyStates[SDL_SCANCODE_Q])
         directionV = -1;
 
-    g_Context.mainCamera->owner->GetTransform()->Translate(
-        (directionH * movementSpeed * Time::deltaTime * -g_Context.mainCamera->owner->GetTransform()->GetRight()) +
-        (directionF * movementSpeed * Time::deltaTime * g_Context.mainCamera->owner->GetTransform()->GetForward()) +
-        (directionV * movementSpeed * Time::deltaTime * g_Context.mainCamera->owner->GetTransform()->GetUp()));
+    Vector3 motion = (directionH * movementSpeed * Time::deltaTime * -owner->GetTransform()->GetRight()) +
+                     (directionF * movementSpeed * Time::deltaTime * owner->GetTransform()->GetForward()) +
+                     (0 * Time::deltaTime * owner->GetTransform()->GetUp());
+    // m_characterController->Move({motion.x, motion.y, motion.z});
+    // SDL_Log("Player motion: %f, %f, %f", motion.x, motion.y, motion.z);
+    owner->GetTransform()->Translate(motion);
 
-    bool isMouseLeftDown = mouseStates == SDL_BUTTON_LEFT;
+    owner->GetTransform()
+        ->Rotate({0.f, InputSystem::mouse->deltaX * lookSpeed * Time::deltaTime, 0.f});
+    g_Context.mainCamera->owner->GetTransform()->Rotate({InputSystem::mouse->deltaY * -lookSpeed * Time::deltaTime, 0.f, 0.f});
 
-    if (isMouseLeftDown)
-    {
-        g_Context.mainCamera->owner->GetTransform()->Rotate({0.f, InputSystem::mouse->deltaX * lookSpeed * Time::deltaTime, 0.f});
-        g_Context.mainCamera->owner->GetTransform()->Rotate({InputSystem::mouse->deltaY * -lookSpeed * Time::deltaTime, 0.f, 0.f});
-    }
-
-    if (m_lastFrameCursorShowStatus && m_lastFrameCursorShowStatus != isMouseLeftDown)
-    {
-        SDL_WarpMouseInWindow(g_Context.window, g_Context.swapchainTextureSize.width / 2, g_Context.swapchainTextureSize.height / 2);
-    }
-
-    SDL_SetWindowRelativeMouseMode(g_Context.window, isMouseLeftDown);
-    SDL_SetWindowMouseGrab(g_Context.window, isMouseLeftDown);
-
-    m_lastFrameCursorShowStatus = isMouseLeftDown;
+    SDL_Log("Player position: %f, %f, %f", owner->GetTransform()->GetPosition().x, owner->GetTransform()->GetPosition().y, owner->GetTransform()->GetPosition().z);
+    // SDL_Log("Player rotation: %f, %f, %f", owner->GetTransform()->GetRotation().x, owner->GetTransform()->GetRotation().y, owner->GetTransform()->GetRotation().z);
 }

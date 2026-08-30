@@ -22,9 +22,9 @@ MeshRenderer::MeshRenderer(const char *meshPath)
     m_meshFilePath = meshPath;
 }
 
-void MeshRenderer::Start()
+void MeshRenderer::OnStart()
 {
-    Renderer::Start();
+    Renderer::OnStart();
 
     MeshBufferData *meshBufferData = nullptr;
     auto it = m_meshBufferDataMap.find(m_meshFilePath.c_str());
@@ -131,7 +131,7 @@ void MeshRenderer::Start()
     SDL_Log("Material Set");
 }
 
-void MeshRenderer::Update()
+void MeshRenderer::OnUpdate()
 {
 }
 

@@ -7,12 +7,13 @@ namespace MonkeyDEngine
 {
     class Camera : public Component
     {
+    protected:
+        void OnStart() override;
+        void OnUpdate() override;
+
     public:
         Camera();
         ~Camera() = default;
-
-        void Start() override;
-        void Update() override;
         void OnDestroy() override;
     };
 };

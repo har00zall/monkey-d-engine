@@ -33,6 +33,9 @@ namespace MonkeyDEngine
 
         void LoadMesh(const char *filePath, Mesh &outMesh);
 
+        void OnStart() override;
+        void OnUpdate() override;
+
     public:
         inline static std::unordered_map<std::string, MeshBufferData *> m_meshBufferDataMap;
 
@@ -44,8 +47,6 @@ namespace MonkeyDEngine
         inline void SetMesh(const char *meshPath) { m_meshFilePath = meshPath; }
         inline void SetMaterial(std::shared_ptr<Material> material) { m_material = material; }
 
-        void Start() override;
-        void Update() override;
         void Render(RenderContext &renderContext) override;
         void OnDestroy() override;
     };

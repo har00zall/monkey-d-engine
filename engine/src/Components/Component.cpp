@@ -3,12 +3,28 @@
 
 using namespace MonkeyDEngine;
 
+void Component::OnStart()
+{
+}
+
+void Component::OnUpdate()
+{
+}
+
 void Component::Start()
 {
+    if (!enabled)
+        return;
+
+    OnStart();
 }
 
 void Component::Update()
 {
+    if (!enabled)
+        return;
+
+    OnUpdate();
 }
 
 void Component::OnDestroy()
