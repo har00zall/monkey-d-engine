@@ -10,7 +10,7 @@ using namespace MonkeyDEngine;
 
 void CameraController::Start()
 {
-    g_Context.mainCamera->owner->GetTransform()->SetPosition({0.0f, 20, -25.0f});
+    g_Context.mainCamera->owner->GetTransform()->SetPosition({0.0f, 40.0f, -40.0f});
     g_Context.mainCamera->owner->GetTransform()->LookAt({0.f, 0.f, 0.f});
 }
 

@@ -10,7 +10,7 @@ target_include_directories(
 
 target_link_libraries(
     Engine PUBLIC
-    SDL3::SDL3 glm tinygltf
+    SDL3::SDL3 glm tinygltf box3d::box3d
 )
 
 if (MSVC)

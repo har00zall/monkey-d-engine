@@ -129,27 +129,10 @@ void MeshRenderer::Start()
     SDL_Log("Setting up material");
     m_material->Setup();
     SDL_Log("Material Set");
-
-    std::random_device rd;
-
-    // Mersenne Twister engine seeded with random_device
-    std::mt19937 gen(rd());
-
-    // Define the range [min, max]
-    int min = 1;
-    int max = 100;
-
-    // Uniform distribution in the given range
-    std::uniform_int_distribution<> dist(min, max);
-
-    // Generate and print a random number
-    int randomNumber = dist(gen);
-    m_randomRotationSpeed = (float)(max / randomNumber);
 }
 
 void MeshRenderer::Update()
 {
-    owner->GetTransform()->Rotate({0.f, m_randomRotationSpeed * Time::deltaTime, 0.f});
 }
 
 void MeshRenderer::Render(RenderContext &renderContext)

@@ -5,9 +5,10 @@
 #include "Core/OS/Time.h"
 #include "Core/System/SystemBase.h"
 #include "Core/System/SystemManager.h"
-#include "Systems/SceneSystem.h"
-#include "Systems/GraphicsSystem.h"
 #include "Systems/InputSystem.h"
+#include "Systems/SceneSystem.h"
+#include "Systems/PhysicsSystem.h"
+#include "Systems/GraphicsSystem.h"
 #include "Components/Camera.h"
 #include "Components/MeshRenderer.h"
 #include "../../vendors/imgui/imgui.h"
@@ -66,6 +67,7 @@ namespace MonkeyDEngine
                 {.autoStart = false, .type = typeid(SceneSystem), .instance = std::make_shared<SceneSystem>()}, // make sure you SceneSystem is registered first
                 {.autoStart = true, .type = typeid(GraphicsSystem), .instance = std::make_shared<GraphicsSystem>()},
                 {.autoStart = true, .type = typeid(InputSystem), .instance = std::make_shared<InputSystem>()},
+                {.autoStart = true, .type = typeid(PhysicsSystem), .instance = std::make_shared<PhysicsSystem>()},
             });
         SDL_Log("[End] Systems Registered and Started");
 
@@ -116,6 +118,9 @@ namespace MonkeyDEngine
 
             // Game Update
             SystemManager::Instance().GetSystem<SceneSystem>()->Update();
+
+            // Physics Update
+            SystemManager::Instance().GetSystem<PhysicsSystem>()->PhysicsUpdate();
 
             // Graphics Render
             SystemManager::Instance().GetSystem<GraphicsSystem>()->Render3D();

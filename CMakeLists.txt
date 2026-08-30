@@ -27,12 +27,16 @@ FetchContent_Declare(
     GIT_REPOSITORY  https://github.com/syoyo/tinygltf.git
     GIT_TAG         v3.0.0
 )
+FetchContent_Declare(box3d
+    GIT_REPOSITORY  https://github.com/erincatto/box3d.git
+    GIT_TAG         v0.1.0
+)
 
 set(BUILD_EXAMPLES OFF CACHE INTERNAL "")
 set(BUILD_GAMES OFF CACHE INTERNAL "")
 set(WITH_PIC ON CACHE INTERNAL "")
 
-FetchContent_MakeAvailable(SDL3 glm tinygltf)
+FetchContent_MakeAvailable(SDL3 glm tinygltf box3d)
 
 add_subdirectory(engine)
 add_subdirectory(sandbox)
